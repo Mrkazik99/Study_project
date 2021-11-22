@@ -26,7 +26,7 @@
 // }
 node {
     stage('Build Docker Image'){
-        sh "sudo docker build -t python_api:test ."
+        sh "docker build -t python_api:test ."
     }
     stage ('run container'){
         sh "docker run --name python_api python_api:test"
