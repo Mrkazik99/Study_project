@@ -5,7 +5,7 @@ pipeline {
     stages {
         stage("cleaner") {
             steps {
-                sh 'clean.sh'
+                sh 'sh ./clean.sh'
             }
         }
         stage("build") {
@@ -15,7 +15,7 @@ pipeline {
         }
         stage("deploy") {
             steps {
-                sh 'deploy.sh'
+                sh 'sh ./deploy.sh'
             }
         }
     }
