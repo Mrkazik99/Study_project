@@ -1,9 +1,11 @@
 pipeline {
 
-    agent { label "linux" }
+    agent {
+        docker { image 'node:14-alpine' }
+    }
 
     stages {
-        stage("clean") {
+        stage("cleaner") {
             steps {
                 sh "docker kill python_api"
                 sh "docker rm python_api"
