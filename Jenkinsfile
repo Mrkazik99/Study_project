@@ -1,21 +1,22 @@
 pipeline {
 
-    agent any
+    agent { label "linux" }
 
     stages {
-        stage("cleaner") {
+        stage("clean") {
             steps {
-                sh 'sh ./clean.sh'
+                sh "docker kill python_api"
+                sh "docker rm python_api"
             }
         }
         stage("build") {
             steps {
-                sh 'sudo docker image build -t python_api:test .'
+                sh "sudo docker build -t python_api:test ."
             }
         }
         stage("deploy") {
             steps {
-                sh 'sh ./deploy.sh'
+                sh "docker run --name python_api python_api:test"
             }
         }
     }
