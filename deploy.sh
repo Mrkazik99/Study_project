@@ -1,1 +1,1 @@
-sudo docker run python_api:test
+docker run python_api:test

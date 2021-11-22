@@ -1,3 +1,3 @@
-sudo docker kill python-api
-sudo docker rm python-api
-sudo docker image rm python_api:test
+docker kill python-api
+docker rm python-api
+docker image rm python_api:test
