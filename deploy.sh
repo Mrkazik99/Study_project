@@ -1,1 +1,0 @@
-docker run python_api:test
