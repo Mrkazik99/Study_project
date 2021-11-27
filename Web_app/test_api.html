@@ -9,6 +9,13 @@
             fetch('http://192.168.1.230/service/api/test')
             .then((resp) => resp.json())
             .then(function(data) {
+                alert(data);
+                console.log(data);
+                });
+            fetch('http://192.168.1.230/service/api/zadanko')
+            .then((resp) => resp.json())
+            .then(function(data) {
+                alert(data);
                 console.log(data);
                 });
         </script>
