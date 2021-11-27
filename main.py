@@ -4,7 +4,7 @@ import aiohttp_cors
 routes = web.RouteTableDef()
 
 
-@routes.get('/service/api/test ')
+@routes.get('/service/api/test')
 async def test(request):
     return web.json_response({'accepted': True}, status=200)
 
