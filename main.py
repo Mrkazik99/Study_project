@@ -3,14 +3,13 @@ from aiohttp import web
 routes = web.RouteTableDef()
 
 
-@routes.get('/test')
+@routes.get('/service/api/test')
 async def test():
-
     return web.json_response({'accepted': True}, status=200)
 
-@routes.get('/zadanko')
-async def zadanko():
 
+@routes.get('/service/api/zadanko')
+async def zadanko():
     return web.json_response({'Api': 'Odpowiada xDDD'}, status=200)
 
 
