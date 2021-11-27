@@ -6,17 +6,13 @@
     <body>
         Oto jest test!
         <script>
-            fetch_data = {
-                method: 'POST',
-                headers: new Headers({'Content-Type': 'application/json'})
-            }
-            fetch('http://192.168.1.230/service/api/test', fetch_data)
+            fetch('http://25.73.3.218/service/api/test')
             .then((resp) => resp.json())
             .then(function(data) {
                 alert(data);
                 console.log(data);
                 });
-            fetch('http://192.168.1.230/service/api/zadanko', fetch_data)
+            fetch('http://25.73.3.218/service/api/zadanko')
             .then((resp) => resp.json())
             .then(function(data) {
                 alert(data);
