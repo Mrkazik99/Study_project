@@ -1,5 +1,2 @@
-import time
-
-while True:
+for i in range(20):
     print('Hello world!')
-    time.sleep(10)
