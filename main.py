@@ -3,10 +3,15 @@ from aiohttp import web
 routes = web.RouteTableDef()
 
 
-@routes.get('/smtool/api/v0.1/platform')
-async def platform_info(request):
+@routes.get('/test')
+async def test():
 
     return web.json_response({'accepted': True}, status=200)
+
+@routes.get('/zadanko')
+async def zadanko():
+
+    return web.json_response({'Api': 'Odpowiada xDDD'}, status=200)
 
 
 app = web.Application()
