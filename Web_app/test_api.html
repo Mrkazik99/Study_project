@@ -3,10 +3,14 @@
     <head>
         <title>Test</title>
     </head>
-    <body>        
+    <body>
+        Oto jest test!
         <script>
-            let data = fetch('http://python_api/service/api/test');
-            alert(data);
+            fetch('http://192.168.1.230/service/api/test')
+            .then((resp) => resp.json())
+            .then(function(data) {
+                console.log(data);
+                });
         </script>
     </body>
 </html>
