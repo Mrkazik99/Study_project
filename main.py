@@ -4,12 +4,12 @@ routes = web.RouteTableDef()
 
 
 @routes.get('/service/api/test')
-async def test():
+async def test(request):
     return web.json_response({'accepted': True}, status=200)
 
 
 @routes.get('/service/api/zadanko')
-async def zadanko():
+async def zadanko(request):
     return web.json_response({'Api': 'Odpowiada xDDD'}, status=200)
 
 
