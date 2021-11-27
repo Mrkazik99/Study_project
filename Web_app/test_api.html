@@ -3,13 +3,10 @@
     <head>
         <title>Test</title>
     </head>
-    <body>
-        <?php
-            $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, $this->"http://python_api/service/api/test");
-            $result = curl_exec($ch);
-            $result = @json_decode($result);
-            echo $result;
-        ?>
+    <body>        
+        <script>
+            let data = fetch('http://python_api/service/api/test');
+            alert(data);
+        </script>
     </body>
 </html>

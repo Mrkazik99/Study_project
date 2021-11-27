@@ -1,5 +1,4 @@
-FROM trafex/php-nginx:2.2.0
-EXPOSE 8080
-WORKDIR /var/www/html/
-RUN rm -f index.php && rm -f test.html
+FROM nginx:1.20.2
+EXPOSE 8080:80
+WORKDIR /usr/share/nginx/html/
 ADD . ./
