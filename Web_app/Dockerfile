@@ -1,4 +1,4 @@
-FROM nginx:1.20.2
+FROM trafex/php-nginx:2.2.0
 EXPOSE 80:8080
-WORKDIR /usr/share/nginx/html
+WORKDIR /var/www/html
 ADD . ./
