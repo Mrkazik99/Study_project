@@ -9,6 +9,8 @@ class Database:
     def __init__(self):
         self.conn = conn = sqlite3.connect('./db/service.db')
         self.c = conn.cursor()
+        self.loop = None
+        self.task = None
 
         self.c.execute("""CREATE TABLE IF NOT EXISTS datatable(id INTEGER PRIMARY KEY AUTOINCREMENT, curr_cpu_freq INTEGER, 
                 available_ram FLOAT, used_ram FLOAT, available_swap FLOAT, used_swap FLOAT, timestamp DATE)""")
@@ -18,6 +20,7 @@ class Database:
 
     async def update(self):
         while True:
+            print('Taks in progress')
             timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             print('Adding value to db', timestamp)
             self.c.execute(
