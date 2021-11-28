@@ -1,6 +1,8 @@
 from aiohttp import web
 import aiohttp_cors
+from db import Database
 
+db = Database()
 routes = web.RouteTableDef()
 
 
@@ -12,6 +14,11 @@ async def test(request):
 @routes.get('/service/api/zadanko')
 async def zadanko(request):
     return web.json_response({'Api': 'Odpowiada xDDD'}, status=200)
+
+
+@routes.get('/service/api/get_data')
+async def zadanko(request):
+    return web.json_response(db.get_data(), status=200)
 
 
 app = web.Application()
