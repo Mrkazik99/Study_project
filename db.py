@@ -7,7 +7,7 @@ import psutil
 
 class Database:
     def __init__(self):
-        self.conn = conn = sqlite3.connect('updatable.db')
+        self.conn = conn = sqlite3.connect('./db/service.db')
         self.c = conn.cursor()
         self.loop = None
         self.task = None
