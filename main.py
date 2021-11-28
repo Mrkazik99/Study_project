@@ -18,7 +18,7 @@ async def zadanko(request):
 
 @routes.get('/service/api/get_data')
 async def zadanko(request):
-    return web.json_response(db.get_data(), status=200)
+    return web.json_response(await db.get_data(), status=200)
 
 
 app = web.Application()

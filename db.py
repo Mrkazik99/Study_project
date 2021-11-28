@@ -7,7 +7,7 @@ import psutil
 
 class Database:
     def __init__(self):
-        self.conn = conn = sqlite3.connect('/app/db/service.db')
+        self.conn = conn = sqlite3.connect('/db/service.db')
         self.c = conn.cursor()
 
         self.c.execute("""CREATE TABLE IF NOT EXISTS datatable(id INTEGER PRIMARY KEY AUTOINCREMENT, curr_cpu_freq INTEGER, 
