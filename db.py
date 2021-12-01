@@ -17,8 +17,9 @@ class Database:
         self.c.execute("""CREATE TABLE IF NOT EXISTS customer(id integer PRIMARY KEY AUTOINCREMENT, first_name text,
         surname text, phone_number text, email text)""")
 
-    async def get_data(self, id):
-        return self.c.execute("""SELECT * FROM `customer` WHERE id="""+str(id))
+    async def get_data(self, user_id):
+        for row in self.c.execute("""SELECT * FROM `customer` WHERE id="""+str(user_id)):
+            return row
 
     async def push_data(self, name, surname, phone, email):
         self.c.execute("INSERT INTO customer(first_name, surname, phone_number, email) VALUES (?, ?, ?, ?)", (name, surname, phone, email))
