@@ -9,35 +9,18 @@ class Database:
     def __init__(self):
         self.conn = conn = sqlite3.connect('./db/service.db')
         self.c = conn.cursor()
-        self.loop = None
-        self.task = None
 
-        self.c.execute("""CREATE TABLE IF NOT EXISTS datatable(id INTEGER PRIMARY KEY AUTOINCREMENT, curr_cpu_freq INTEGER, 
-        available_ram FLOAT, used_ram FLOAT, available_swap FLOAT, used_swap FLOAT, timestamp DATE)""")
+        self.c.execute("""CREATE TABLE IF NOT EXISTS employee(id integer PRIMARY KEY AUTOINCREMENT, username text,
+        password text, first_name text, surname text, phone_number text, email text, address text)""")
+        self.c.execute("""CREATE TABLE IF NOT EXISTS request(id integer PRIMARY KEY AUTOINCREMENT, id_employee integer,
+        id_customer integer, description text, date0 datetime, date1 datetime, dat2 datetime, status text)""")
+        self.c.execute("""CREATE TABLE IF NOT EXISTS customer(id integer PRIMARY KEY AUTOINCREMENT, first_name text,
+        surname text, phone_number text, email text)""")
 
-        self.loop = asyncio.get_event_loop()
-        self.task = self.loop.create_task(self.update())
+    async def get_data(self, id):
+        return self.c.execute("""SELECT * FROM `customer` WHERE id="""+str(id))
 
-    async def update(self):
-        while True:
-            timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            print('Adding value to db', timestamp)
-            self.c.execute(
-                "INSERT INTO datatable (curr_cpu_freq, available_ram, used_ram, available_swap, used_swap, timestamp) VALUES (?, ?, ?, ?, ?, ?)",
-                (round(psutil.cpu_freq().current), round(psutil.virtual_memory().available / 1073741824, 2),
-                 round(psutil.virtual_memory().used / 1073741824, 2),
-                 round(psutil.swap_memory().free / 1073741824, 2), round(psutil.swap_memory().used / 1073741824, 2),
-                 timestamp))
-            self.conn.commit()
-            await asyncio.sleep(1)
+    async def push_data(self, name, surname, phone, email):
+        self.c.execute("INSERT INTO customer(first_name, surname, phone_number, email) VALUES (?, ?, ?, ?)", (name, surname, phone, email))
+        self.conn.commit()
 
-    async def get_data(self):
-        print('Data accesed', str(datetime.now()))
-        return {'Collected data': [{'cpufreq': row[0],
-                                    'availram': row[1],
-                                    'usedram': row[2],
-                                    'availswap': row[3],
-                                    'usedswap': row[4],
-                                    'timestamp': row[5]} for row in
-                                   self.c.execute(
-                                       """SELECT * FROM (SELECT curr_cpu_freq, available_ram, used_ram, available_swap, used_swap, timestamp FROM datatable ORDER BY timestamp DESC LIMIT 720) ORDER BY timestamp ASC""")]}
