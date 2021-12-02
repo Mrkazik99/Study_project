@@ -3,7 +3,7 @@
     <head>
         <title>Test</title>
         <script>
-            function login(form) {
+            function signin(form) {
                 let payload = {'login': form.login, 'passwd': form.passwd}
                 fetch('http://25.73.3.218/service/api/get_data', {method: 'POST', body: payload})
                     .then((resp) => resp.json())
@@ -17,7 +17,7 @@
         <form>
             <input type="text" name="login">
             <input type="text" name="passwd">
-            <button onclick="login(this.form)">Zaloguj!</button>
+            <button onclick="signin(this.form)" type="button">Zaloguj!</button>
         </form>
     </body>
 </html>
