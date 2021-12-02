@@ -1,6 +1,7 @@
 from aiohttp import web
 import aiohttp_cors
 from db import Database
+from pyjwt import jwt
 
 db = Database()
 routes = web.RouteTableDef()
@@ -25,6 +26,17 @@ async def zadanko(request):
 async def zadanko(request):
     await db.push_data(request.rel_url.query['name'], request.rel_url.query['surname'], request.rel_url.query['phone'], request.rel_url.query['email'])
     return web.json_response({"status": "accepted"}, status=201)
+
+@routes.post('/service/api/login')
+async def login(request):
+    login = request.rel_url.query['login']
+    passwd = request.rel_url.query['passwd']
+    result = await db.login(login, passwd)
+    if result['result'] == 201:
+        return web.json_response({'Status': 'Authorized'}, status=201)
+    else:
+        return web.json_response({'Status': 'Unauthorized'}, status=401)
+
 
 
 app = web.Application()
