@@ -1,7 +1,7 @@
 from aiohttp import web
 import aiohttp_cors
 from db import Database
-from pyjwt import jwt
+import jwt
 
 db = Database()
 routes = web.RouteTableDef()
