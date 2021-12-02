@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Test</title>
+        <script>
+            function signin(form) {
+                let payload = {'login': form.login, 'passwd': form.passwd}
+                console.log(payload)
+                fetch('http://25.73.3.218/service/api/login', {method: 'POST', body: payload})
+                    .then((resp) => resp.json())
+                    .then(function(data) {
+                        console.log(data);
+                        });
+            }
+        </script>
+    </head>
+    <body>
+        <form>
+            <input type="text" name="login">
+            <input type="text" name="passwd">
+            <button onclick="signin(this.form)" type="button">Zaloguj! </button>
+        </form>
+    </body>
+</html>
