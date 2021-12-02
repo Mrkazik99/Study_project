@@ -54,3 +54,4 @@ for route in list(app.router.routes()):
     cors.add(route)
 
 web.run_app(app, host='0.0.0.0', port=80)
+
