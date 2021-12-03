@@ -3,3 +3,4 @@ aiohttp_cors
 psutil
 pyjwt
 fastapi
+uvicorn[standard]
