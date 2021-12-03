@@ -2,3 +2,4 @@ aiohttp
 aiohttp_cors
 psutil
 pyjwt
+fastapi
