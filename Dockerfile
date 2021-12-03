@@ -3,6 +3,6 @@ EXPOSE 80
 WORKDIR /app
 RUN mkdir db
 ADD requirements.txt .
-RUN python3.9 -m pip install -r requirements.txt
+RUN python3.9 -m pip install --no-cache-dir --upgrade -r requirements.txt
 ADD . ./
-ENTRYPOINT [ "python", "main.py" ]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "80"]
