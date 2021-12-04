@@ -50,6 +50,3 @@ def insert_employee(username: str, email: str, passwd: str, department_id: int):
 def get_employee():
     result = select(employee for employee in Employee)[:]
     return result
-
-while True:
-    print('1')
