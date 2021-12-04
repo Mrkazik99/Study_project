@@ -1,6 +1,6 @@
 from decimal import Decimal
 from pony.orm import *
-import datetime
+from datetime import datetime
 
 db = Database()
 
@@ -40,7 +40,6 @@ class Request(db.Entity):
 db.bind(provider='sqlite', filename='./db/service.db', create_db=True)
 db.generate_mapping(create_tables=True)
 set_sql_debug(True)
-
 
 @db_session
 def insert_employee(username: str, email: str, passwd: str, department_id: int):
