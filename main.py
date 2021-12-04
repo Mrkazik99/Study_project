@@ -27,6 +27,5 @@ async def input():
 async def get():
     res = db.get_employee()
     print(res)
-    print(res.show())
     return responses.JSONResponse(status_code=status.HTTP_200_OK, content={'workers': res})
 
