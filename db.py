@@ -7,6 +7,7 @@ db = Database()
 
 class Department(db.Entity):
     name = Required(str)
+    workers = Optional('Employee', reverse='department_id')
 
 
 class Employee(db.Entity):
@@ -17,13 +18,15 @@ class Employee(db.Entity):
     first_name = Optional(str)
     surname = Optional(str)
     phone_number = Optional(str)
+    requests = Optional('Request', reverse='id_employee')
 
 
 class Customer(db.Entity):
     first_name = Required(str)
     surname = Required(str)
-    phonr_number = Required(str)
+    phone_number = Required(str)
     email = Optional(str)
+    requests = Optional('Request', reverse='id_customer')
 
 
 class Request(db.Entity):

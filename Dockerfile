@@ -4,5 +4,5 @@ WORKDIR /app
 RUN mkdir db
 ADD requirements.txt .
 RUN python3.9 -m pip install --no-cache-dir --upgrade -r requirements.txt
-ADD . ./
+ADD . .
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "80"]
