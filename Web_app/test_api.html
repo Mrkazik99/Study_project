@@ -6,21 +6,20 @@
     <body>
         Oto jest test!
         <script>
-            fetch('http://25.73.3.218/service/api/test')
+            fetch('http://25.73.3.218/')
             .then((resp) => resp.json())
             .then(function(data) {
                 console.log(data);
                 });
-            fetch('http://25.73.3.218/service/api/zadanko')
+            fetch('http://25.73.3.218/input')
             .then((resp) => resp.json())
             .then(function(data) {
                 console.log(data);
                 });
-            fetch('http://25.73.3.218/service/api/get_data')
+            fetch('http://25.73.3.218/get')
             .then((resp) => resp.json())
             .then(function(data) {
                 console.log(data);
-                document.write(JSON.stringify(data, null, 4));
                 });
         </script>
     </body>
