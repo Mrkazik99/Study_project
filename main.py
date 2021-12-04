@@ -20,7 +20,7 @@ async def root():
 
 @app.get("/input")
 async def input():
-    db.insert_employee('mat', 'mat', 'mat', 1)
+    db.insert_employee('mat', 'mat', 'mat')
     return responses.Response(status_code=status.HTTP_201_CREATED)
 
 @app.get("/get")

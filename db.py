@@ -13,10 +13,10 @@ class Employee(db.Entity):
     username = Required(str)
     email = Required(str)
     password = Required(str)
-    department_id = Required(Department)
+    department_id = Optional(Department)
     first_name = Optional(str)
     surname = Optional(str)
-    phonr_number = Optional(str)
+    phone_number = Optional(str)
 
 
 class Customer(db.Entity):
@@ -42,8 +42,8 @@ db.generate_mapping(create_tables=True)
 set_sql_debug(True)
 
 @db_session
-def insert_employee(username: str, email: str, passwd: str, department_id: int):
-    p1 = Employee(username=username, email=email, password=passwd, department_id=department_id)
+def insert_employee(username: str, email: str, passwd: str):
+    p1 = Employee(username=username, email=email, password=passwd)
     commit()
 
 @db_session
