@@ -41,6 +41,7 @@ class Request(db.Entity):
 # db.bind(provider='sqlite', filename='service.db', create_db=True)
 db.bind(provider='sqlite', filename='./db/service.db', create_db=True)
 db.generate_mapping(create_tables=True)
+print('zmiana')
 set_sql_debug(True)
 
 
@@ -58,7 +59,9 @@ def get_employee():
     result = []
     for row in select(employee for employee in Employee):
         result.append(row.to_dict())
-    return result
+
+    x = [row.to_dict() for row in select(employee for employee in Employee)]
+    return x
 
 
 #  ----------------------->Requests section<-----------------------
@@ -82,7 +85,7 @@ def update_request(req_id: int, employee=None, customer=None, description=None, 
     req.date2 = date2 if date2 else req.date2
     req.status = status if status else req.status
     req.price = price if price else req.price
-    commit()
+    flush()
 
 
 @db_session(serializable=True)
