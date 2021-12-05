@@ -38,8 +38,8 @@ class Request(db.Entity):
     price = Optional(Decimal)
 
 
-db.bind(provider='sqlite', filename='service.db', create_db=True)
-# db.bind(provider='sqlite', filename='./db/service.db', create_db=True)
+# db.bind(provider='sqlite', filename='service.db', create_db=True)
+db.bind(provider='sqlite', filename='./db/service.db', create_db=True)
 db.generate_mapping(create_tables=True)
 set_sql_debug(True)
 
@@ -186,5 +186,5 @@ def get_departments():
 def remove_department():
     ...
 
-while True:
-    print('1')
+# while True:
+#     print('1')
