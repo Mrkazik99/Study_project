@@ -2,3 +2,5 @@ pyjwt
 fastapi
 uvicorn[standard]
 pony
+asyncio
+Starlette

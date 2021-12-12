@@ -15,7 +15,8 @@ class Employee(db.Entity):
     email = Required(str)
     password = Required(str)
     department = Required(Department)
-    name = Optional (str)
+    activated = Required(bool)
+    name = Optional(str)
     phone_number = Optional(str)
     requests = Set('Request')
 
@@ -38,14 +39,48 @@ class Request(db.Entity):
     price = Optional(Decimal)
 
 
-# db.bind(provider='sqlite', filename='service.db', create_db=True)
-db.bind(provider='sqlite', filename='./db/service.db', create_db=True)
+db.bind(provider='sqlite', filename='service.db', create_db=True)
+# db.bind(provider='sqlite', filename='./db/service.db', create_db=True)
 db.generate_mapping(create_tables=True)
-print('zmiana')
 set_sql_debug(True)
 
 
 #  ----------------------->Auth section<-----------------------
+
+@db_session()
+def register(username: str, email: str, passwd: str):
+    if department := Department.get(id=1) is None:
+        department = Department(name='administracja')
+        commit()
+    employee = Employee(username=username, email=email, password=passwd, department=department, activated=False)
+    commit()
+
+
+@db_session()
+def put_token(token, user):
+    ...
+
+
+@db_session()
+def login(username: str, passwd: str, username_login: bool):
+    if username_login:
+        if user := Employee.select(lambda e: e.username == username) == 1:
+            if passwd == user.password:
+                return {'auth': True}
+            else:
+                return {'auth': False}
+        else:
+            return {'auth': False}
+    else:
+        if user := Employee.selevt(lambda e: e.email == username) == 1:
+            if passwd == user.password:
+                return {'auth': True}
+            else:
+                return {'auth': False}
+        else:
+            return {'auth': False}
+
+
 
 @db_session()
 def insert_employee(username: str, email: str, passwd: str, department_id: int):
@@ -189,5 +224,6 @@ def get_departments():
 def remove_department():
     ...
 
-# while True:
-#     print('1')
+
+while True:
+    print('1')
