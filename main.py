@@ -10,11 +10,11 @@ import time
 
 timeout = 60 * 15
 
-sessions = [{'user': {'token': 'token', 'timeout': 'timeout'}},
-            {'user': {'token': 'token', 'timeout': 'timeout'}}]
+sessions = [{'user': {'token': 'token', 'timeout': time.time()}},
+            {'user': {'token': 'token', 'timeout': time.time()}}]
 
 
-async def user_logout():
+async def user_logout_task():
     while True:
         for index, session in enumerate(sessions):
             if time.time() - session['user']['timeout'] > timeout:
@@ -61,11 +61,22 @@ async def login(username, passwd, username_login):
 
 @app.post("/register")
 async def register(username, passwd, email, x_token: Optional[List[str]] = Header(None)):
-    if check_and_update(x_token):
+    if not check_and_update(x_token):
         return RedirectResponse(url='/')
     else:
         db.register(username, email, passwd)
         return responses.JSONResponse(status_code=status.HTTP_201_CREATED, content={'account': 'registered'})
+
+@app.get("/logout")
+async def logout(x_token: Optional[List[str]] = Header(None)):
+    if not check_and_update(x_token):
+        return responses.Response(status_code=status.HTTP_401_UNAUTHORIZED)
+    else:
+        for index, session in enumerate(sessions):
+            if x_token == session['user']['token']:
+                del sessions[index]
+                return responses.Response(status_code=status.HTTP_200_OK)
+        return responses.Response(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @app.get("/request/{req_id}")
@@ -74,5 +85,4 @@ async def request_id(req_id: int):
     return responses.JSONResponse(status_code=status.HTTP_200_OK, content={'requests': res})
 
 
-loop = asyncio.get_running_loop()
-loop.run_until_complete(user_logout())
+asyncio.create_task(user_logout_task())
