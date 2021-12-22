@@ -67,6 +67,7 @@ async def register(username, passwd, email, x_token: Optional[List[str]] = Heade
         db.register(username, email, passwd)
         return responses.JSONResponse(status_code=status.HTTP_201_CREATED, content={'account': 'registered'})
 
+
 @app.get("/logout")
 async def logout(x_token: Optional[List[str]] = Header(None)):
     if not check_and_update(x_token):
@@ -83,6 +84,30 @@ async def logout(x_token: Optional[List[str]] = Header(None)):
 async def request_id(req_id: int):
     res = db.get_request(req_id)
     return responses.JSONResponse(status_code=status.HTTP_200_OK, content={'requests': res})
+
+
+@app.post("/create_request")
+async def create_request(client_infos: dict, employee_id: int, description: str, new_customer: bool):
+    db.create_request(client_infos, employee_id, description, new_customer)
+    return responses.Response(status_code=status.HTTP_201_CREATED)
+
+
+@app.post("/create_client")
+async def create_client(client_infos: dict):
+    db.create_customer(client_infos)
+    return responses.Response(status_code=status.HTTP_201_CREATED)
+
+
+@app.post("/create_department")
+async def create_department(name: str):
+    db.create_department(name=name)
+    return responses.Response(status_code=status.HTTP_201_CREATED)
+
+
+@app.post("/create_employee")
+async def create_employee(employee_infos: dict):
+    db.create_employee(employee_infos=employee_infos)
+    return responses.Response(status_code=status.HTTP_201_CREATED)
 
 
 asyncio.create_task(user_logout_task())
