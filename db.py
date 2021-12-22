@@ -84,7 +84,6 @@ def login(username: str, passwd: str, username_login: bool):
             return {'auth': False}
 
 
-
 @db_session()
 def insert_employee(username: str, email: str, passwd: str, department_id: int):
     department = Department.get(id=department_id)
@@ -105,8 +104,14 @@ def get_employee():
 #  ----------------------->Requests section<-----------------------
 
 @db_session()
-def create_request(employee_id: int, customer_id: int, description: str):
-    r = Request(employee=Employee.get(id=employee_id), customer=Customer.get(id=customer_id), description=description,
+def create_request(customer_infos: dict, employee_id: int, description: str, new_customer: bool):
+    if new_customer:
+        customer = Customer(name=customer_infos['name'], phone_number=customer_infos['phone'],
+                            email=customer_infos['mail'])
+        commit()
+    else:
+        customer = Customer.get(id=customer_infos['id'])
+    r = Request(employee=Employee.get(id=employee_id), customer=customer, description=description,
                 status=0, date0=datetime.now)
     commit()
 
@@ -153,8 +158,9 @@ def remove_request():
 #  ----------------------->Customers section<-----------------------
 
 @db_session()
-def create_customer():
-    ...
+def create_customer(customer_infos):
+    customer = Customer(name=customer_infos['name'], phone_number=customer_infos['phone'], email=customer_infos['mail'])
+    commit()
 
 
 @db_session()
@@ -180,8 +186,10 @@ def remove_customer():
 #  ----------------------->Employees section<-----------------------
 
 @db_session()
-def create_employee():
-    ...
+def create_employee(employee_infos: dict):
+    employee = Employee(username=employee_infos['user'], password=employee_infos['passwd'],
+                        email=employee_infos['mail'], department=Department.get(id=employee_infos['department_id']))
+    commit()
 
 
 @db_session()
@@ -226,7 +234,6 @@ def get_departments():
 @db_session(serializable=True)
 def remove_department():
     ...
-
 
 # while True:
 #     print('1')
