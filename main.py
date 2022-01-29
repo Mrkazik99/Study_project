@@ -83,7 +83,7 @@ async def logout(x_token: Optional[List[str]] = Header(None)):
 @app.get("/request/{req_id}")
 async def request_id(req_id: int):
     res = db.get_request(req_id)
-    return responses.JSONResponse(status_code=status.HTTP_200_OK, content={'requests': res})
+    return responses.JSONResponse(status_code=status.HTTP_200_OK, content={'request': res})
 
 
 @app.post("/create_request")

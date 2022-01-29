@@ -1,6 +1,7 @@
 from decimal import Decimal
 from pony.orm import *
 from datetime import datetime
+import json
 
 db = Database()
 
@@ -135,10 +136,7 @@ def update_request(req_id: int, employee=None, customer=None, description=None, 
 @db_session(serializable=True)
 def get_request(req_id: int):
     request = Request.get(id=req_id)
-    request.date0 = str(request.date0) if not None else None
-    request.date1 = str(request.date1) if not None else None
-    request.date2 = str(request.date2) if not None else None
-    return request.to_dict()
+    return json.dumps(request)
 
 
 @db_session(serializable=True)
