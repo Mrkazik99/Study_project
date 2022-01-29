@@ -111,6 +111,7 @@ def create_request(customer_infos: dict, employee_id: int, description: str, new
         commit()
     else:
         customer = Customer.get(id=customer_infos['id'])
+
     r = Request(employee=Employee.get(id=employee_id), customer=customer, description=description,
                 status=0, date0=datetime.now)
     commit()
@@ -131,9 +132,12 @@ def update_request(req_id: int, employee=None, customer=None, description=None, 
     flush()
 
 
-@db_session(serializable=False)
+@db_session(serializable=True)
 def get_request(req_id: int):
     request = Request.get(id=req_id)
+    request.date0 = str(request.date0)
+    request.date1 = str(request.date1)
+    request.date2 = str(request.date2)
     return request.to_dict()
 
 
