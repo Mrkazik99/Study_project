@@ -131,7 +131,7 @@ def update_request(req_id: int, employee=None, customer=None, description=None, 
     flush()
 
 
-@db_session(serializable=True)
+@db_session(serializable=False)
 def get_request(req_id: int):
     request = Request.get(id=req_id)
     return request.to_dict()

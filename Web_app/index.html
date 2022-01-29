@@ -34,38 +34,22 @@
         Pokaż wydane/zutylizowane
     </button>
 </div>
-<div id="query_result">
-    <table class="table align-middle">
-        <thead>
-        <tr>
-            <th scope="col">Data przyjęcia</th>
-            <th scope="col">Data aktualizacji</th>
-            <th scope="col">Klient</th>
-            <th scope="col">Stan</th>
-            <th scope="col">Akcje</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr>
-            <th scope="row">Data</th>
-            <td>Data</td>
-            <td>gfnioagnb asfdasf</td>
-            <td>
-                <button type="button" class="btn btn-success btn-sm" disabled>Zakończone</button>
-            </td>
-            <td>
-                <button type="button" class="btn btn-success btn-sm px-3">
-                    <i class="far fa-eye"></i>
-                </button>
-                <button type="button" class="btn btn-success btn-sm px-3">
-                    <i class="fas fa-ellipsis-h"></i>
-                </button>
-            </td>
-        </tr>
-        </tbody>
-    </table>
+<div id="query_result" class="d-flex align-content-center justify-content-center">
+    <button class="btn btn-primary" type="button" disabled>
+        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+        Trwa łączenie z API
+    </button>
 </div>
 <script src="assets/js/mdb.min.js"></script>
+<script>
+    timeout = setTimeout(function() {$('#query_result').html('<button type="button" class="btn btn-danger" disabled>Błąd połączenia z API</button>')}, 5000);
+    fetch('http://192.168.1.230/')
+        .then((resp) => resp.json())
+        .then(function(data) {
+            $('#query_result').text(data);
+            clearTimeout(timeout);
+        });
+</script>
 </body>
 </html>
 
