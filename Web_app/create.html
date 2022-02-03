@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Page</title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/jquery-ui.css">
+    <link rel="stylesheet" href="assets/css/mdb.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
+    <script src="assets/js/jquery.js"></script>
+    <script src="assets/js/script.js"></script>
+    <script src="assets/js/jquery-ui.js"></script>
+    <script src="assets/js/searchEngine.js"></script>
+<!--    <script>-->
+<!--        setTimeout(function() {window.location.reload(true);}, 1000);-->
+<!--    </script>-->
+</head>
+<body>
+<nav></nav>
+<!-- Tabs navs -->
+<ul class="nav nav-tabs nav-fill mb-3" id="tab" role="tablist">
+    <li class="nav-item" role="presentation">
+        <a class="nav-link active" id="tab-request" data-mdb-toggle="tab" href="#tabs-request" role="tab" aria-controls="tabs-request" aria-selected="true">Zlecenie</a>
+    </li>
+    <li class="nav-item" role="presentation">
+        <a class="nav-link" id="tab-customer" data-mdb-toggle="tab" href="#tabs-customer" role="tab" aria-controls="tabs-customer" aria-selected="false">Klient</a>
+    </li>
+    <li class="nav-item" role="presentation">
+        <a class="nav-link" id="tab-employee" data-mdb-toggle="tab" href="#tabs-employee" role="tab" aria-controls="tabs-employee" aria-selected="false">Pracownik</a>
+    </li>
+    <li class="nav-item" role="presentation">
+        <a class="nav-link" id="tab-department" data-mdb-toggle="tab" href="#tabs-department" role="tab" aria-controls="tabs-department" aria-selected="false">Dział</a>
+    </li>
+</ul>
+<!-- Tabs navs -->
+
+<div class="d-flex justify-content-center align-content-center">
+    <!-- Tabs content -->
+    <div class="tab-content" id="content">
+        <div class="tab-pane fade show active" id="tabs-request" role="tabpanel" aria-labelledby="tab-request">
+            <form>
+                <!-- dataset input -->
+                <div class="form-outline mb-4">
+                    <input id="request_customer" class="form-control" list="request_customers" onchange="update_field('request_customers', 'request_customer-value', this)">
+                    <datalist id="request_customers">
+                    </datalist>
+                    <label class="form-label" for="request_customer">Wybierz klienta</label>
+                </div>
+                <div class="form-outline mb-4">
+                    <input type="text" id="request_customer-value" class="form-control" disabled/>
+                    <label class="form-label" for="request_customer-value"></label>
+                </div>
+
+                <!-- dataset input -->
+                <div class="form-outline mb-4">
+                    <input id="request_employee" class="form-control" list="request_employees" onchange="update_field('request_employees', 'request_employee-value', this)">
+                    <datalist id="request_employees">
+                    </datalist>
+                    <label class="form-label" for="request_employee">Wybierz pracownika</label>
+                </div>
+                <div class="form-outline mb-4">
+                    <input type="text" id="request_employee-value" class="form-control" disabled/>
+                    <label class="form-label" for="request_employee-value"></label>
+                </div>
+
+                <!-- Message input -->
+                <div class="form-outline mb-4">
+                    <textarea class="form-control" id="request_description" rows="4"></textarea>
+                    <label class="form-label" for="request_description">Opis</label>
+                </div>
+                <div class="mb-4">
+                    (Uwzględnij wszystkie informacja, tj: wyposażenie, problem, czy numer dowodu zakupu)
+                </div>
+
+                <!-- Submit button -->
+                <button type="button" class="btn btn-primary btn-block mb-4" id="request_apply">Wyślij</button>
+            </form>
+        </div>
+        <div class="tab-pane fade" id="tabs-customer" role="tabpanel" aria-labelledby="tab-customer">
+            <form id="customer_form">
+                <div class="row mb-4">
+                    <div class="col">
+                        <div class="form-outline">
+                            <input type="text" id="customer_name" class="form-control" />
+                            <label class="form-label" for="customer_name">Imię</label>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="form-outline">
+                            <input type="text" id="customer_surname" class="form-control" />
+                            <label class="form-label" for="customer_surname">Nazwisko</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- text input -->
+                <div class="form-outline mb-4">
+                    <input type="email" id="customer_email" class="form-control" />
+                    <label class="form-label" for="customer_email">Email</label>
+                </div>
+
+                <!-- text input -->
+                <div class="form-outline mb-4">
+                    <input type="text" id="customer_phone" class="form-control" />
+                    <label class="form-label" for="customer_phone">Numer telefonu</label>
+                </div>
+
+                <!-- Submit button -->
+                <button type="button" class="btn btn-primary btn-block mb-4" id="customer_apply">Wyślij</button>
+            </form>
+        </div>
+        <div class="tab-pane fade" id="tabs-employee" role="tabpanel" aria-labelledby="tab-employee">
+            <form>
+                <div class="row mb-4">
+                    <div class="col">
+                        <div class="form-outline">
+                            <input type="text" id="employee_username" class="form-control" />
+                            <label class="form-label" for="employee_username">Nazwa użytkownika</label>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="form-outline">
+                            <input type="password" id="employee_pasword" class="form-control" />
+                            <label class="form-label" for="employee_pasword">Hasło</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col">
+                        <div class="form-outline">
+                            <input type="text" id="employee_name" class="form-control" />
+                            <label class="form-label" for="employee_name">Imię</label>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="form-outline">
+                            <input type="text" id="employee_surname" class="form-control" />
+                            <label class="form-label" for="employee_surname">Nazwisko</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- text input -->
+                <div class="form-outline mb-4">
+                    <input type="email" id="employee_email" class="form-control" />
+                    <label class="form-label" for="employee_email">Email</label>
+                </div>
+
+                <!-- text input -->
+                <div class="form-outline mb-4">
+                    <input type="text" id="employee_phone" class="form-control" />
+                    <label class="form-label" for="employee_phone">Numer telefonu</label>
+                </div>
+
+                <!-- select input -->
+                <div class="form-outline mb-4">
+                    <select id="employee_department" class="form-select mb-4" aria-label="Default select example">
+                        <option selected disabled>Wybierz dział</option>
+                    </select>
+                </div>
+
+                <!-- Checked checkbox -->
+                <div class="form-check mb-4">
+                    <input class="form-check-input" type="checkbox" value="" id="employee_activated" checked/>
+                    <label class="form-check-label" for="employee_activated">Konto ma być aktywne?</label>
+                </div>
+
+                <!-- Submit button -->
+                <button type="button" class="btn btn-primary btn-block mb-4" id="employee_apply">Wyślij</button>
+            </form>
+        </div>
+        <div class="tab-pane fade" id="tabs-department" role="tabpanel" aria-labelledby="tab-department">
+            <form>
+                <div class="mb-4">
+                    <!-- text input -->
+                    <div class="form-outline mb-4">
+                        <input type="email" id="department_name" class="form-control" />
+                        <label class="form-label" for="department_name">Nazwa działu</label>
+                    </div>
+
+                    <!-- Message input -->
+                    <div class="form-outline mb-4">
+                        <textarea class="form-control" id="department_keywords" rows="4"></textarea>
+                        <label class="form-label" for="department_keywords">Słowa kluczowe</label>
+                    </div>
+                    <div class="mb-4">
+                        (Słowa kluczowe powinny być oddzielone przecinkiem)
+                    </div>
+
+                    <!-- Submit button -->
+                    <button type="button" class="btn btn-primary btn-block mb-4" id="department_apply">Wyślij</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- Tabs content -->
+</div>
+</body>
+<script>
+    fetch('http://127.0.0.1:20001/get/customers')
+        .then((resp) => resp.json())
+        .then(function(data) {
+            data.forEach(element => {
+                $('#request_customers').append(`<option value="${element['id']}">${element['name']} - ${element['phone_number']}</option>`);
+            });
+        });
+    fetch('http://127.0.0.1:20001/get/employees')
+        .then((resp) => resp.json())
+        .then(function(data) {
+            data.forEach(element => {
+                $('#request_employees').append(`<option value="${element['id']}">${element['name']} - ${element['department']}</option>`);
+            });
+        });
+    fetch('http://127.0.0.1:20001/get/departments')
+        .then((resp) => resp.json())
+        .then(function(data) {
+            data.forEach(element => {
+                $('#employee_department').append(`<option value="${element['id']}">${element['name']}</option>`);
+            });
+        });
+</script>
+<script src="assets/js/mdb.min.js"></script>
+</html>
+
+
+<!-- https://mdbootstrap.com/docs/standard/layout/grid/                                          layout
+https://mdbootstrap.com/docs/standard/                                                      animated things
+https://mdbootstrap.com/docs/standard/forms/overview/                                       forms
+https://mdbootstrap.com/docs/standard/plugins/cookies-management/                           cookie management -->
