@@ -4,8 +4,11 @@ from starlette.responses import RedirectResponse
 from typing import List, Optional
 from fastapi import FastAPI, status, responses, Header, Cookie
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.encoders import jsonable_encoder
 import db
-import jwt
+from datetime import datetime, timedelta
+import json
+# import jwt
 import time
 
 timeout = 60 * 15
@@ -47,7 +50,8 @@ app.add_middleware(
 
 @app.get("/")
 async def root():
-    return responses.JSONResponse(status_code=status.HTTP_201_CREATED, content={'message': 'Hello world!'})
+    db.fill_db()
+    return responses.JSONResponse(status_code=status.HTTP_201_CREATED, content={'message': 'Done!'})
 
 
 @app.get("/login")
@@ -83,7 +87,8 @@ async def logout(x_token: Optional[List[str]] = Header(None)):
 @app.get("/request/{req_id}")
 async def request_id(req_id: int):
     res = db.get_request(req_id)
-    return responses.JSONResponse(status_code=status.HTTP_200_OK, content={'request': res})
+    json_compatible_res = jsonable_encoder(res)
+    return responses.JSONResponse(status_code=status.HTTP_200_OK, content=json_compatible_res)
 
 
 @app.post("/create_request")
@@ -108,6 +113,37 @@ async def create_department(name: str):
 async def create_employee(employee_infos: dict):
     db.create_employee(employee_infos=employee_infos)
     return responses.Response(status_code=status.HTTP_201_CREATED)
+
+
+@app.get("/get/departments")
+async def get_departments():
+    res = db.get_departments()
+    json_compatible_res = jsonable_encoder(res)
+    return responses.JSONResponse(status_code=status.HTTP_200_OK, content=json_compatible_res)
+
+
+@app.get("/get/customers")
+async def get_customers():
+    res = db.get_customers()
+    json_compatible_res = jsonable_encoder(res)
+    return responses.JSONResponse(status_code=status.HTTP_200_OK, content=json_compatible_res)
+
+
+@app.get("/get/employees")
+async def get_employees():
+    res = db.get_employees_departs()
+    json_compatible_res = jsonable_encoder(res)
+    return responses.JSONResponse(status_code=status.HTTP_200_OK, content=json_compatible_res)
+
+
+@app.get("/get/requests_date")
+async def get_requests_date(date_from=None, date_to=None):
+    date_from = datetime.now() - timedelta(days=30) if not date_from else date_from
+    date_to = datetime.now() if not date_to else date_to
+    print(date_from, date_to)
+    res = db.get_requests_date(date_from, date_to)
+    json_compatible_res = jsonable_encoder(res)
+    return responses.JSONResponse(status_code=status.HTTP_200_OK, content=json_compatible_res)
 
 
 asyncio.create_task(user_logout_task())
