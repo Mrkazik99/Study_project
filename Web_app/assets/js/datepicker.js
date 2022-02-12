@@ -1,6 +1,6 @@
 $(function(){
     $('.datepicker').datepicker({
-        dateFormat: "dd-mm-yy",
+        dateFormat: "mm-dd-yy",
         showAnim: "slideDown",
         showOtherMonths: true,
         selectOtherMonths: true,
