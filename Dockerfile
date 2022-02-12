@@ -1,5 +1,5 @@
 FROM python:3.9-slim
-EXPOSE 80
+EXPOSE 20001
 WORKDIR /app
 RUN mkdir db
 ADD requirements.txt .
