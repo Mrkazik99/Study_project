@@ -6,10 +6,10 @@
     <link rel="stylesheet" href="assets/css/style.css">
     <link rel="stylesheet" href="assets/css/jquery-ui.css">
     <link rel="stylesheet" href="assets/css/mdb.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
     <script src="assets/js/jquery.js"></script>
     <script src="assets/js/script.js"></script>
+    <script src="assets/js/const_settings.js"></script>
     <script src="assets/js/jquery-ui.js"></script>
     <script src="assets/js/searchEngine.js"></script>
 <!--    <script>-->
@@ -19,7 +19,7 @@
 <body>
 <nav></nav>
 <!-- Tabs navs -->
-<ul class="nav nav-tabs nav-fill mb-3" id="tab" role="tablist">
+<ul class="nav nav-tabs nav-justified mb-3" id="tab" role="tablist">
     <li class="nav-item" role="presentation">
         <a class="nav-link active" id="tab-request" data-mdb-toggle="tab" href="#tabs-request" role="tab" aria-controls="tabs-request" aria-selected="true">Zlecenie</a>
     </li>
@@ -37,7 +37,7 @@
 
 <div class="d-flex justify-content-center align-content-center">
     <!-- Tabs content -->
-    <div class="tab-content" id="content">
+    <div class="tab-content" id="tabs-content">
         <div class="tab-pane fade show active" id="tabs-request" role="tabpanel" aria-labelledby="tab-request">
             <form>
                 <!-- dataset input -->
@@ -144,7 +144,7 @@
 
                 <!-- text input -->
                 <div class="form-outline mb-4">
-                    <input type="email" id="employee_email" class="form-control" />
+                    <input type="text" id="employee_email" class="form-control" />
                     <label class="form-label" for="employee_email">Email</label>
                 </div>
 
@@ -155,11 +155,9 @@
                 </div>
 
                 <!-- select input -->
-                <div class="form-outline mb-4">
-                    <select id="employee_department" class="form-select mb-4" aria-label="Default select example">
-                        <option selected disabled>Wybierz dział</option>
-                    </select>
-                </div>
+                <select id="employee_department" class="form-select mb-4" aria-label="Default select example">
+                    <option selected disabled>Wybierz dział</option>
+                </select>
 
                 <!-- Checked checkbox -->
                 <div class="form-check mb-4">
@@ -173,31 +171,29 @@
         </div>
         <div class="tab-pane fade" id="tabs-department" role="tabpanel" aria-labelledby="tab-department">
             <form>
-                <div class="mb-4">
-                    <!-- text input -->
-                    <div class="form-outline mb-4">
-                        <input type="email" id="department_name" class="form-control" />
-                        <label class="form-label" for="department_name">Nazwa działu</label>
-                    </div>
 
-                    <!-- Message input -->
-                    <div class="form-outline mb-4">
-                        <textarea class="form-control" id="department_keywords" rows="4"></textarea>
-                        <label class="form-label" for="department_keywords">Słowa kluczowe</label>
-                    </div>
-                    <div class="mb-4">
-                        (Słowa kluczowe powinny być oddzielone przecinkiem)
-                    </div>
-
-                    <!-- Submit button -->
-                    <button type="button" class="btn btn-primary btn-block mb-4" id="department_apply">Wyślij</button>
+                <!-- text input -->
+                <div class="form-outline mb-4">
+                    <input type="email" id="department_name" class="form-control" />
+                    <label class="form-label" for="department_name">Nazwa</label>
                 </div>
+
+                <!-- Message input -->
+<!--                    <div class="form-outline mb-4">-->
+<!--                        <textarea class="form-control" id="department_keywords" rows="4"></textarea>-->
+<!--                        <label class="form-label" for="department_keywords">Słowa kluczowe</label>-->
+<!--                    </div>-->
+<!--                    <div class="mb-4">-->
+<!--                        (Słowa kluczowe powinny być oddzielone przecinkiem)-->
+<!--                    </div>-->
+
+                <!-- Submit button -->
+                <button type="button" class="btn btn-primary btn-block mb-4" id="department_apply">Wyślij</button>
             </form>
         </div>
     </div>
     <!-- Tabs content -->
 </div>
-</body>
 <script>
     fetch('http://127.0.0.1:20001/get/customers')
         .then((resp) => resp.json())
@@ -222,10 +218,5 @@
         });
 </script>
 <script src="assets/js/mdb.min.js"></script>
+</body>
 </html>
-
-
-<!-- https://mdbootstrap.com/docs/standard/layout/grid/                                          layout
-https://mdbootstrap.com/docs/standard/                                                      animated things
-https://mdbootstrap.com/docs/standard/forms/overview/                                       forms
-https://mdbootstrap.com/docs/standard/plugins/cookies-management/                           cookie management -->

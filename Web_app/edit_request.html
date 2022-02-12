@@ -6,7 +6,6 @@
     <link rel="stylesheet" href="assets/css/style.css">
     <link rel="stylesheet" href="assets/css/jquery-ui.css">
     <link rel="stylesheet" href="assets/css/mdb.min.css">
-    <!--    <link rel="stylesheet" href="assets/css/font-awesome.css">-->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
     <script src="assets/js/jquery.js"></script>
     <script src="assets/js/script.js"></script>
@@ -16,20 +15,11 @@
 </head>
 <body>
 <nav></nav>
-<div id="query_result" class="container">
-    <div class="row">
-        <div class="col-md"></div>
-        <div class="col-md">
-            <div class=" justify-content-center d-flex align-items-center">
-                <button class="btn btn-primary" type="button" disabled>
-                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                    Trwa łączenie z API
-                </button>
-            </div>
-        </div>
-        <div class="col-md"></div>
-    </div>
-</div>
+<div id="query_result" class="d-flex align-content-center justify-content-center">
+    <button class="btn btn-primary" type="button" disabled>
+        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+        Trwa łączenie z API
+    </button>
 </div>
 <script>
     url = new URL(window.location.href);
