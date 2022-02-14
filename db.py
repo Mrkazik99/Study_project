@@ -230,6 +230,11 @@ def get_employee(username: str, password: str):
     return Employee.get(username=username, password=password).to_dict()
 
 
+@db_session()
+def get_employee_username(username: str):
+    return Employee.get(username=username).to_dict()
+
+
 @db_session
 def get_employee_from_token(token: str):
     return Employee.get(token=token).to_dict()

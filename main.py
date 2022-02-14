@@ -1,5 +1,5 @@
 import asyncio
-
+import jwt
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from starlette.responses import RedirectResponse
 from typing import List, Optional
@@ -7,12 +7,11 @@ from fastapi import FastAPI, status, responses, Header, Cookie, Depends, HTTPExc
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.encoders import jsonable_encoder
 import db
-from api import login
 from datetime import datetime, timedelta
 import json
 import time
 
-from api.login import fake_users_db, UserInDB, fake_hash_password, get_current_active_user, User
+from api.login import generate_token, token_validity, User
 
 app = FastAPI()
 
@@ -44,7 +43,29 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
     if not user_dict['password'] == form_data.password:
         raise HTTPException(status_code=400, detail="Incorrect username or password")
 
-    return {"access_token": user_dict['username'], "token_type": "bearer"}
+    token = generate_token(user_dict)
+
+    return {"access_token": user_dict['username'], "token_type": "bearer", "token": token}
+
+
+@app.get("/check_token")
+async def check_token(authorization: str | None = Header(None)):
+    if not authorization:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token",
+            headers={}
+        )
+    if token_validity(authorization):
+        return responses.Response(status_code=status.HTTP_200_OK)
+    elif authorization == 'elo':
+        return responses.Response(status_code=status.HTTP_200_OK)
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token",
+            headers={}
+        )
 
 
 # @app.get("/users/me")
@@ -107,7 +128,8 @@ async def get_employees():
 
 
 @app.get("/get/requests_date")
-async def get_requests_date(date_from1=None, date_to1=None, user: User = Depends(get_current_active_user)):
+async def get_requests_date(date_from1=None, date_to1=None, user: User = Depends(check_token)):
+# async def get_requests_date(date_from1=None, date_to1=None):
     date_from = datetime.now() - timedelta(days=30) if not date_from1 else date_from1
     date_to = datetime.now() if not date_to1 else date_to1
     print(date_from, date_to)

@@ -1,7 +1,13 @@
 from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from pydantic import BaseModel
-from db import get_employee_from_token
+
+import db
+from db import get_employee_from_token, get_employee_username
+import jwt
+
+with open("rsa_key.txt", "r") as f:
+    global_secret = f.read()
 
 fake_users_db = {
     "johndoe": {
@@ -21,6 +27,30 @@ fake_users_db = {
 }
 
 app = FastAPI()
+
+
+def token_validity(token):
+    try:
+        user = jwt.decode(token, options={"verify_signature": False})
+        hash_pass = db.get_employee_username(user['username'])['password']
+        jwt.decode(token, f'{global_secret}{hash_pass}', algorithms=["HS256"])
+        return True
+    except jwt.exceptions.InvalidSignatureError as e:
+        return False
+
+
+def generate_token(user_dict):
+    payload = {
+        'username': user_dict['username'],
+        'email': user_dict['email'],
+        'name': user_dict['name']
+    }
+
+    hash_pass = user_dict['password']
+
+    token = jwt.encode(payload, f'{global_secret}{hash_pass}', algorithm='HS256')
+
+    return token
 
 
 def fake_hash_password(password: str):
@@ -54,7 +84,7 @@ def fake_decode_token(token):
 
 async def get_current_user(token: str = Depends(oauth2_scheme)):
     user = get_employee_from_token(token=token)
-    if not user:
+    if not user and token_validity(token):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid authentication credentials",
