@@ -5,15 +5,16 @@ function checkToken() {
             .then(resp => {
                 console.log(resp);
                 if (resp.status !== 200) {
-                    window.location.href="/";
+                    setCookie('message', 'Ta treść jest dostępna po zalogowaniu', 5);
                     console.log('error token');
+                    window.location.href="/";
                 }
             })
             .catch(function(error) {
                 console.log(error);
                 setCookie('authorization', '');
                 setCookie('message', 'Internal server error, contact your administrator', 5);
-                // window.location.href="/";
+                window.location.href="/";
             });
     }
 }
@@ -27,7 +28,7 @@ function hashPass(passphrase) {
 
 function submit_login(form) {
     if (form.password === '' || form.username.value === '') {
-        setCookie('message', 'Wrong credentials', 5);
+        setCookie('message', 'Nieprawidłowe dane logownaia', 5);
         window.location.href='/';
     }
     let form_data = new FormData(form);
@@ -40,7 +41,7 @@ function submit_login(form) {
             if (resp.status === 200) {
                 return resp.json()
             } else {
-                setCookie('message', 'Wrong credentials', 5);
+                setCookie('message', 'Nieprawidłowe dane logownaia', 5);
                 window.location.href='/';
             }
         })

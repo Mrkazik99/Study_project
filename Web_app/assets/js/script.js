@@ -130,15 +130,3 @@ function getDashboardData() {
     let date_to = $('#dateTo').val();
     getRequestsByDate(date_from, date_to);
 }
-
-//to jest tylko przykładowa funkcja (do poprawienia lub wyjebania)
-
-// function create_new_customer() {
-//     $("#customer_form")
-//     let customer_infos = {
-//         'name': `${form.name} ${customer.surname}`,
-//         'phone': form.phone,
-//         'mail': form.mail
-//     };
-//     payload = JSON.parse(customer_infos);
-// }
