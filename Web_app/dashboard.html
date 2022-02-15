@@ -12,17 +12,18 @@
   <script src="assets/js/const_settings.js"></script>
   <script src="assets/js/jquery-ui.js"></script>
   <script src="assets/js/login_handle.js"></script>
+  <script src="assets/js/searchEngine.js"></script>
 </head>
 <body>
 <nav></nav>
 <div class="container d-inline">
   <label>Data od:
-    <input type="text" class="datepicker form-control" id="dateFrom" placeholder="mm/dd/yy">
+    <input type="text" class="datepicker form-control" id="dateFrom" autocomplete="off" placeholder="mm/dd/yy">
   </label>
   <label>Data do:
-    <input type="text" class="datepicker form-control" id="dateTo" placeholder="mm/dd/yy">
+    <input type="text" class="datepicker form-control" id="dateTo" autocomplete="off" placeholder="mm/dd/yy">
   </label>
-  <a type="button" class="btn btn-success" data-mdb-toggle="tooltip" data-mdb-placement="bottom" title="Pobierz dane">
+  <a type="button" class="btn btn-success" data-mdb-toggle="tooltip" data-mdb-placement="bottom" title="Pobierz dane" onclick="getDashboardData();">
     <i class="far fa-paper-plane"></i>
   </a>
   <label class="float-end">Wyszukaj:
@@ -51,12 +52,5 @@
   getRequestsByDate()
 </script>
 <script src="assets/js/mdb.min.js"></script>
-<script src="assets/js/searchEngine.js"></script>
 </body>
 </html>
-
-
-<!-- https://mdbootstrap.com/docs/standard/layout/grid/                                          layout
-https://mdbootstrap.com/docs/standard/                                                      animated things
-https://mdbootstrap.com/docs/standard/forms/overview/                                       forms
-https://mdbootstrap.com/docs/standard/plugins/cookies-management/                           cookie management -->

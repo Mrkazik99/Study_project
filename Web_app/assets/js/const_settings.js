@@ -16,3 +16,4 @@ const names_map ={
     'date2': 'Data wydania',
     'price': 'Wycena',
 }
+const api_gui_timeout = 5000; //[ms]

@@ -6,34 +6,47 @@ function checkToken() {
                 console.log(resp);
                 if (resp.status !== 200) {
                     window.location.href="/";
+                    console.log('error token');
                 }
             })
             .catch(function(error) {
                 console.log(error);
+                setCookie('authorization', '');
+                setCookie('message', 'Internal server error, contact your administrator', 5);
+                // window.location.href="/";
             });
     }
 }
 
-function hashPass() {
-    let pwdObj = document.getElementById('password');
+function hashPass(passphrase) {
+    let passObj = passphrase
     let hashObj = new jsSHA("SHA-512", "TEXT", {numRounds: 1});
-    hashObj.update(pwdObj.value);
-    pwdObj.value = hashObj.getHash("HEX");
+    hashObj.update(passObj);
+    return hashObj.getHash("HEX");
 }
 
 function submit_login(form) {
-    let payload = {};
-    fetch(``, {method: "POST", mode: "cors"})
+    if (form.password === '' || form.username.value === '') {
+        setCookie('message', 'Wrong credentials', 5);
+        window.location.href='/';
+    }
+    let form_data = new FormData(form);
+    form_data.set('password', hashPass(form.password));
+    let payload = form_data
+    console.log(payload)
+    fetch(`${api_url}/login`, {method: "POST", body: payload})
         .then(resp => {
             console.log(resp);
             if (resp.status === 200) {
                 return resp.json()
             } else {
-
+                setCookie('message', 'Wrong credentials', 5);
+                window.location.href='/';
             }
         })
         .then(data => {
             setCookie('authorization', `${data['token']}`, 40);
+            window.location.href='/dashboard.html';
         })
         .catch(function(error) {
             console.log(error);
@@ -61,4 +74,16 @@ function getCookie(cname) {
         }
     }
     return "";
+}
+
+function logout(token) {
+    fetch(`${api_url}/logout`, {method: "GET", mode: "cors", headers: {'authorization': token}})
+        .then(resp => {
+            if (resp.status === 200) {
+                setCookie('message', 'Wylogowano pomyślnie', 5);
+            }
+        })
+        .catch(function(error) {
+            console.log(error);
+        });
 }

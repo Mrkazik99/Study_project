@@ -12,6 +12,7 @@
     <script src="assets/js/const_settings.js"></script>
     <script src="assets/js/jquery-ui.js"></script>
     <script src="assets/js/login_handle.js"></script>
+    <script src="assets/js/jsSHA.js"></script>
 </head>
 <body>
 <nav></nav>
@@ -19,14 +20,14 @@
     <form>
         <!-- Email input -->
         <div class="form-outline mb-4">
-            <input type="email" id="form1Example1" class="form-control" />
-            <label class="form-label" for="form1Example1">Email address</label>
+            <input type="text" id="username" name="username" value="worker3" class="form-control" />
+            <label class="form-label" for="username">Email address</label>
         </div>
 
         <!-- Password input -->
         <div class="form-outline mb-4">
-            <input type="password" id="form1Example2" class="form-control" />
-            <label class="form-label" for="form1Example2">Password</label>
+            <input type="password" id="password" name="password" value="hard_password" class="form-control" />
+            <label class="form-label" for="password">Password</label>
         </div>
 
         <!-- 2 column grid layout for inline styling -->
@@ -41,9 +42,27 @@
         </div>
 
         <!-- Submit button -->
-        <button type="button" class="btn btn-primary btn-block">Sign in</button>
+        <button type="button" class="btn btn-primary btn-block" onclick="submit_login(this.form)">Sign in</button>
     </form>
 </div>
+<div id="dialog_parent"></div>
+<script>
+    message = getCookie('message');
+    if (message !== '') {
+        $('#dialog_parent').html(`<div id="dialog" title="Odpowiedź serwera"><p>${message}</p></div>`);
+        $( function() {
+            $( "#dialog" ).dialog({
+                modal: true,
+                buttons: {
+                    Ok: function() {
+                        $(this).dialog("close");
+                    }
+                }
+            });
+        });
+        setCookie('message', '');
+    }
+</script>
 <script src="assets/js/mdb.min.js"></script>
 </body>
 </html>

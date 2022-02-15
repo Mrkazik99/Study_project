@@ -14,10 +14,16 @@
     <script src="assets/js/login_handle.js"></script>
 </head>
 <body>
-<nav></nav>
+Wylogowanie nastąpi za 10s
+<div class="progress" style="height: 20px;">
+    <div class="progress-bar" role="progressbar" id="xd" style="width: 0;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">0s</div>
+</div>
 <script>
-    setCookie('authorization', 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VybmFtZSI6IndvcmtlcjMiLCJlbWFpbCI6ImFiY0BhYmMucGwiLCJuYW1lIjoid29ya2VyMiJ9.YvWYwd8Ri0A-kuRDHvkieW1hHW9_huGNSZDzXp33rlU')
-    setCookie('message', 'Wypierdalaja chamie za brame');
+    counter = 0;
+    checkToken();
+    logout(getCookie('authorization'));
+    setInterval(function(){$('#xd').attr('style', `width: ${10*counter}%`).text(`${counter}s`);  counter++;}, 900)
+    setTimeout(function(){window.location.href="/";}, 10000);
 </script>
 <script src="assets/js/mdb.min.js"></script>
 </body>

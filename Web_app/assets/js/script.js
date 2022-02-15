@@ -52,10 +52,10 @@ function columnParser(data, editable=false) {
 }
 
 function getRequestsByDate(date1=null, date2=null) {
-    let date_from = (date1 == null) ? '' : '?date_from=';
-    let date_to = (date2 == null) ? '' : '&date_to=';
+    let date_from = (date1 == null) ? '' : '?date_from1='+date1;
+    let date_to = (date2 == null) ? '' : '&date_to1='+date2;
     let token = getCookie('authorization');
-    let timeout = setTimeout(function() {$('#query_result').html('<button type="button" class="btn btn-danger" disabled>Błąd połączenia z API</button>')}, 5000);
+    let timeout = setTimeout(function() {$('#query_result').html('<button type="button" class="btn btn-danger" disabled>Błąd połączenia z API</button>')}, api_gui_timeout);
     fetch(`${api_url}/get/requests_date${date_from}${date_to}`, {method: "GET", mode: "cors", headers: {'authorization': token}})
         .then((resp) => {
             console.log(resp)
@@ -95,7 +95,7 @@ function getRequestById(id, editable=false) {
         return;
     }
     let token = getCookie('authorization');
-    let timeout = setTimeout(function() {$('#query_result').html('<button type="button" class="btn btn-danger" disabled>Błąd połączenia z API</button>')}, 5000);
+    let timeout = setTimeout(function() {$('#query_result').html('<button type="button" class="btn btn-danger" disabled>Błąd połączenia z API</button>')}, api_gui_timeout);
     fetch(`${api_url}/get/request/${id}`, {method: "GET", mode: "cors", headers: {'authorization': token}})
         .then((resp) => {
             if (resp.status === 404) {
@@ -123,6 +123,12 @@ function getRequestById(id, editable=false) {
             $('#query_result').html('<button type="button" class="btn btn-danger" disabled>Unexpected error</button>');
             console.log(error);
         });
+}
+
+function getDashboardData() {
+    let date_from = $('#dateFrom').val();
+    let date_to = $('#dateTo').val();
+    getRequestsByDate(date_from, date_to);
 }
 
 //to jest tylko przykładowa funkcja (do poprawienia lub wyjebania)
