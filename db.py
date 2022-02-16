@@ -38,6 +38,7 @@ class Request(db.Entity):
     id = PrimaryKey(int, auto=True)
     employee = Required(Employee)
     customer = Required(Customer)
+    item = Required(str)
     description = Required(str)
     status = Required(int)
     date0 = Required(datetime)
@@ -60,12 +61,12 @@ db.generate_mapping(create_tables=True)
 def fill_db():
     Department(name='administracja')
     db.flush()
-    Employee(username='worker3', email='abc@abc.pl', password='cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e', department=Department[1], activated=True,
-             token='worker3', name='worker2')
+    # Employee(username='worker6', email='abc4@abc.pl', password='cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e', department=Department[1], activated=True,
+    #          token='', name='worker2')
     Customer(name='customer2', phone_number='123123123')
     db.flush()
     for i in range(2):
-        Request(employee=Employee[1], customer=Customer[1], description='mgikomndfgo', status=1, date0=datetime.now(),
+        Request(employee=Employee[3], customer=Customer[1], item="Samsung", description='mgikomndfgo', status=4, date0=datetime.now(),
                 date1=datetime.now())
     db.flush()
 
@@ -119,24 +120,25 @@ def insert_employee(username: str, email: str, passwd: str, department_id: int):
 #  ----------------------->Requests section<-----------------------
 
 @db_session()
-def create_request(customer_infos: dict, employee_id: int, description: str, new_customer: bool):
+def create_request(customer_infos: dict, employee_id: int, item: str, description: str, new_customer: bool):
     if new_customer:
         customer = Customer(name=customer_infos['name'], phone_number=customer_infos['phone'],
                             email=customer_infos['mail'])
     else:
         customer = Customer.get(id=customer_infos['id'])
 
-    Request(employee=Employee.get(id=employee_id), customer=customer, description=description,
+    Request(employee=Employee.get(id=employee_id), customer=customer, item=item, description=description,
             status=1, date0=datetime.now)
     db.flush()
 
 
 @db_session()
-def update_request(req_id: int, employee=None, customer=None, description=None, date0=None, date1=None, date2=None,
+def update_request(req_id: int, employee=None, customer=None, item=None, description=None, date0=None, date1=None, date2=None,
                    status=None, price=None):
     req = Request.get(id=req_id)
     req.employee = employee if employee else req.employee
     req.customer = customer if customer else req.customer
+    req.item = item if item else req.item
     req.description = description if description else req.description
     req.date0 = date0 if date0 else req.date0
     req.date1 = date1 if date1 else req.date1
@@ -178,11 +180,6 @@ def get_requests_date(start, end):
     return result
 
 
-@db_session()
-def remove_request():
-    ...
-
-
 #  ----------------------->Customers section<-----------------------
 
 @db_session()
@@ -204,12 +201,6 @@ def get_customer():
 @db_session(serializable=True)
 def get_customers():
     return [row.to_dict() for row in select(req for req in Customer)]
-
-
-@db_session()
-def remove_customer():
-    ...
-
 
 #  ----------------------->Employees section<-----------------------
 

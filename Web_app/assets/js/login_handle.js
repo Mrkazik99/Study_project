@@ -3,7 +3,6 @@ function checkToken() {
     if (token !== "") {
         fetch(`${api_url}/check_token`, {method: "GET", mode: "cors", headers: {'authorization': token}})
             .then(resp => {
-                console.log(resp);
                 if (resp.status !== 200) {
                     setCookie('message', 'Ta treść jest dostępna po zalogowaniu', 5);
                     console.log('error token');
@@ -16,6 +15,10 @@ function checkToken() {
                 setCookie('message', 'Internal server error, contact your administrator', 5);
                 window.location.href="/";
             });
+    } else {
+        setCookie('authorization', '');
+        setCookie('message', 'You have no valid token active', 5);
+        window.location.href="/";
     }
 }
 

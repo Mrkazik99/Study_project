@@ -52,6 +52,7 @@
         $('#dialog_parent').html(`<div id="dialog" title="Odpowiedź serwera"><p>${message}</p></div>`);
         $( function() {
             $( "#dialog" ).dialog({
+                dialogClass: "no-close",
                 modal: true,
                 buttons: {
                     Ok: function() {
