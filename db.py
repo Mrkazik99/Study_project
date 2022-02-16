@@ -60,7 +60,7 @@ db.generate_mapping(create_tables=True)
 def fill_db():
     Department(name='administracja')
     db.flush()
-    Employee(username='worker3', email='abc@abc.pl', password='hard_password', department=Department[1], activated=True,
+    Employee(username='worker3', email='abc@abc.pl', password='cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e', department=Department[1], activated=True,
              token='worker3', name='worker2')
     Customer(name='customer2', phone_number='123123123')
     db.flush()
@@ -226,8 +226,20 @@ def update_employee():
 
 
 @db_session()
+def put_employee_token(username: str, token: str):
+    employee = Employee.get(username=username)
+    employee.token = token
+    db.flush()
+
+
+@db_session()
 def get_employee(username: str, password: str):
     return Employee.get(username=username, password=password).to_dict()
+
+
+@db_session()
+def get_employee_username(username: str):
+    return Employee.get(username=username).to_dict()
 
 
 @db_session

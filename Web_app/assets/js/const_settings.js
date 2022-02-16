@@ -5,3 +5,15 @@ const statuses = {
         2: 'W trakcie naprawy',
         3: 'On hold'
     };
+const names_map ={
+    'id': 'Id',
+    'employee': 'Serwisant',
+    'customer': 'Klient',
+    'description': 'Opis',
+    'status': 'Status',
+    'date0': 'Data przyjęcia',
+    'date1': 'Data ostatniej aktualziacji',
+    'date2': 'Data wydania',
+    'price': 'Wycena',
+}
+const api_gui_timeout = 5000; //[ms]
