@@ -1,4 +1,4 @@
-const api_url = 'http://127.0.0.1:20001';
+const api_url = 'http://192.168.1.230:20001';
 const statuses = {
         0: '...',
         1: 'Nowy',
