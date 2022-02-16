@@ -16,7 +16,7 @@
 </head>
 <body>
 <nav></nav>
-<div class="container d-inline">
+<div class="sticky-top bg-light">
   <label>Data od:
     <input type="text" class="datepicker form-control" id="dateFrom" autocomplete="off" placeholder="mm/dd/yy">
   </label>
@@ -27,16 +27,19 @@
     <i class="far fa-paper-plane"></i>
   </a>
   <label class="float-end">Wyszukaj:
-    <input type="text" id="searchquery" class="form-control"/>
+    <input type="text" id="searchquery" class="form-control" onkeyup="find(this);"/>
   </label>
   <label class="float-end">Status:
-    <select id="status" class="form-control form-select select-wrapper">
+    <select id="status" class="form-control form-select select-wrapper" onchange="pick_status(this);">
       <option value="0" selected>Wszystkie</option>
-      <option value="1">Zakończone</option>
+      <option value="1">Nowy</option>
+      <option value="2">W trakcie naprawy</option>
+      <option value="3">On hold</option>
+      <option value="4">Zakończone</option>
     </select>
   </label>
   <span class="form-check-inline float-end">
-        <input class="form-check-input" type="checkbox" value="" id="request_gone"/>
+        <input class="form-check-input" type="checkbox" value="" id="request_gone" onchange="show_gone(this)"/>
         <label class="form-check-label" for="request_gone">Pokaż wydane/zutylizowane</label>
     </span>
 </div>

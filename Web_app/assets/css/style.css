@@ -1,3 +1,7 @@
 .hidden {
     display: none !important;
 }
+
+.no-close .ui-dialog-titlebar-close {
+    display: none;
+}

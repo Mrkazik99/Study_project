@@ -3,7 +3,8 @@ const statuses = {
         0: '...',
         1: 'Nowy',
         2: 'W trakcie naprawy',
-        3: 'On hold'
+        3: 'On hold',
+        4: 'Zakończone'
     };
 const names_map ={
     'id': 'Id',
@@ -17,3 +18,4 @@ const names_map ={
     'price': 'Wycena',
 }
 const api_gui_timeout = 5000; //[ms]
+const default_hidden = [4];

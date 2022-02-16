@@ -10,13 +10,21 @@ function update_field (datalist, text_input, select) {
 }
 
 function tableParser(data) {
-    let content = `<table class="table align-middle"><thead><tr><th scope="col">Data przyjęcia</th><th scope="col">Data aktualizacji</th><th scope="col">Klient</th><th scope="col">Stan</th><th scope="col">Akcje</th></tr></thead><tbody>`
+    let content = `<table class="table align-middle"><thead><tr><th scope="col">Id</th><th scope="col">Data przyjęcia</th><th scope="col">Data aktualizacji</th><th scope="col">Klient</th><th scope="col">Przedmiot</th><th scope="col">Stan</th><th scope="col">Akcje</th></tr></thead><tbody>`
     data.forEach(element => {
         // if (new Date() - element['date0'] >= 2592000000 || new Date() - element['date1'] >= 2592000000){
         if (new Date() - new Date(element['date0']) >= 86400000 * 7 || new Date() - new Date(element['date1']) >= 86400000 * 7){
-            content += `<tr class="table-danger data_row" data-status="${element['status']}"><td>${element['date0']}</td><td>${element['date1']}</td><td>${element['customer']}</td><td>${statuses[element['status']]}</td><td><a type="button" class="btn btn-success btn-sm px-3" href="request.html?id=${element['id']}"><i class="far fa-eye"></i></a><a type="button" class="btn btn-success btn-sm px-3" href="edit_request.html?id=${element['id']}"><i class="fas fa-edit"></i></a><button type="button" class="btn btn-success btn-sm px-3"><i class="fas fa-ellipsis-h"></i></button></td></tr>`
+            content += `<tr class="table-danger data_row`;
+            if (default_hidden.indexOf(element['status']) !== -1 && !$('#request_gone').val()) {
+                content += ' hidden';
+            }
+            content += `" data-status="${element['status']}"><td>${element['id']}</td><td>${element['date0']}</td><td>${element['date1']}</td><td>${element['customer']}</td><td>${element['item']}</td><td>${statuses[element['status']]}</td><td><a type="button" class="btn btn-success btn-sm px-3" href="request.html?id=${element['id']}"><i class="far fa-eye"></i></a><a type="button" class="btn btn-success btn-sm px-3" href="edit_request.html?id=${element['id']}"><i class="fas fa-edit"></i></a><button type="button" class="btn btn-success btn-sm px-3"><i class="fas fa-ellipsis-h"></i></button></td></tr>`
         } else {
-            content += `<tr><td>${element['date0']}</td><td>${element['date1']}</td><td>${element['customer']}</td><td>${statuses[element['status']]}</td><td><a type="button" class="btn btn-success btn-sm px-3" href="request.html?id=${element['id']}"><i class="far fa-eye"></i></a><a type="button" class="btn btn-success btn-sm px-3" href="edit_request.html?id=${element['id']}"><i class="fas fa-edit"></i></a><button type="button" class="btn btn-success btn-sm px-3"><i class="fas fa-ellipsis-h"></i></button></td></tr>`
+            content += `<tr class="data_row`;
+            if (default_hidden.indexOf(element['status']) !== -1 && !$('#request_gone').val()) {
+                content += ' hidden';
+            }
+            content += `" data-status="${element['status']}"><td>${element['id']}</td><td>${element['date0']}</td><td>${element['date1']}</td><td>${element['customer']}</td><td>${element['item']}</td><td>${statuses[element['status']]}</td><td><a type="button" class="btn btn-success btn-sm px-3" href="request.html?id=${element['id']}"><i class="far fa-eye"></i></a><a type="button" class="btn btn-success btn-sm px-3" href="edit_request.html?id=${element['id']}"><i class="fas fa-edit"></i></a><button type="button" class="btn btn-success btn-sm px-3"><i class="fas fa-ellipsis-h"></i></button></td></tr>`
         }
     });
     content += `</tbody></table>`
@@ -25,7 +33,6 @@ function tableParser(data) {
 
 function columnParser(data, editable=false) {
     let content = '';
-    console.log(editable)
     cos = Object.keys(data);
     cos.forEach(element => {
         content += `<div class="row mt-4"><div class="col-md"></div><div class="col-md"><div class="form-outline">`;
@@ -58,9 +65,7 @@ function getRequestsByDate(date1=null, date2=null) {
     let timeout = setTimeout(function() {$('#query_result').html('<button type="button" class="btn btn-danger" disabled>Błąd połączenia z API</button>')}, api_gui_timeout);
     fetch(`${api_url}/get/requests_date${date_from}${date_to}`, {method: "GET", mode: "cors", headers: {'authorization': token}})
         .then((resp) => {
-            console.log(resp)
             if (resp.status === 400) {
-                console.log('400 error');
                 clearTimeout(timeout);
                 $('#query_result').html('<button type="button" class="btn btn-danger" disabled>Problem z zakresem dat</button>');
             } else if (resp.status === 404) {
@@ -69,17 +74,14 @@ function getRequestsByDate(date1=null, date2=null) {
             } else if (resp.status >= 200 && resp.status <= 299) {
                 return resp.json();
             } else {
-                console.log(resp.status);
                 clearTimeout(timeout);
                 $('#query_result').html('<button type="button" class="btn btn-danger" disabled>Unexpected error</button>');
             }
-            console.log(resp)
         })
         .then((data) => {
             if (data !== undefined) {
                 clearTimeout(timeout);
                 $('#query_result').html(tableParser(data));
-                console.log(data);
             }
         })
         .catch(function(error) {
@@ -114,8 +116,6 @@ function getRequestById(id, editable=false) {
             if (data !== undefined) {
                 clearTimeout(timeout);
                 $('#query_result').html(columnParser(data, editable));
-                // $('#query_result').text(JSON.stringify(data));
-                console.log(data);
             }
         })
         .catch(function(error) {
