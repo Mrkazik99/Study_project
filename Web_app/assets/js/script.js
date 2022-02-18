@@ -31,7 +31,7 @@ function tableParser(data) {
     return content
 }
 
-function columnParser(data, editable=false) {
+function columnRequestParser(data, editable=false) {
     let content = '';
     cos = Object.keys(data);
     cos.forEach(element => {
@@ -52,7 +52,7 @@ function columnParser(data, editable=false) {
             content += ' disabled '
         }
         content += element === 'description' ? `>${data[element]}</textarea> ` : `value="${data[element]}"/>`
-        content += `<label class="form-label" for="customer_name">${names_map[element]}</label></div></button></div><div class="col-md"></div></div>`;
+        content += `<label class="form-label" for="customer_name">${requests_keys_map[element]}</label></div></button></div><div class="col-md"></div></div>`;
     })
     content += editable ? '<div class="row mt-4"><div class="col-md"></div><div class="col-md"><div class="form-outline"><button type="button" class="btn btn-primary btn-block mb-4" id="department_apply">Wyślij</button></div></button></div><div class="col-md"></div></div>': ''
     return content;
@@ -115,7 +115,7 @@ function getRequestById(id, editable=false) {
         .then((data) => {
             if (data !== undefined) {
                 clearTimeout(timeout);
-                $('#query_result').html(columnParser(data, editable));
+                $('#query_result').html(columnRequestParser(data, editable));
             }
         })
         .catch(function(error) {

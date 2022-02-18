@@ -1,4 +1,4 @@
-const api_url = 'http://192.168.1.230:20001';
+const api_url = 'http://127.0.0.1:20001';
 const statuses = {
         0: '...',
         1: 'Nowy',
@@ -6,7 +6,29 @@ const statuses = {
         3: 'On hold',
         4: 'Zakończone'
     };
-const names_map ={
+const requests_keys_map ={
+    'id': 'Id',
+    'employee': 'Serwisant',
+    'customer': 'Klient',
+    'description': 'Opis',
+    'status': 'Status',
+    'date0': 'Data przyjęcia',
+    'date1': 'Data ostatniej aktualziacji',
+    'date2': 'Data wydania',
+    'price': 'Wycena',
+}
+const customers_keys_map ={
+    'id': 'Id',
+    'employee': 'Serwisant',
+    'customer': 'Klient',
+    'description': 'Opis',
+    'status': 'Status',
+    'date0': 'Data przyjęcia',
+    'date1': 'Data ostatniej aktualziacji',
+    'date2': 'Data wydania',
+    'price': 'Wycena',
+}
+const employees_keys_map ={
     'id': 'Id',
     'employee': 'Serwisant',
     'customer': 'Klient',

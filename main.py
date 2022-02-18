@@ -87,14 +87,14 @@ async def request_id(req_id: int):
 
 
 @app.post("/create_request")
-async def create_request(client_infos: dict, employee_id: int, description: str, new_customer: bool):
-    db.create_request(client_infos, employee_id, description, new_customer)
+async def create_request(customer_id: int, employee_id: int, item: str, description: str):
+    db.create_request(customer_id, employee_id, item, description)
     return responses.Response(status_code=status.HTTP_201_CREATED)
 
 
-@app.post("/create_client")
-async def create_client(client_infos: dict):
-    db.create_customer(client_infos)
+@app.post("/create_customer")
+async def create_client(name: str, phone: str, email: str):
+    db.create_customer(name, phone, email)
     return responses.Response(status_code=status.HTTP_201_CREATED)
 
 
@@ -105,8 +105,8 @@ async def create_department(name: str):
 
 
 @app.post("/create_employee")
-async def create_employee(employee_infos: dict):
-    db.create_employee(employee_infos=employee_infos)
+async def create_employee(uname: str, passwd: str, name: str, email: str, phone: str, dep_id: int, is_active: bool):
+    db.create_employee(username=uname, password=passwd, name=name, email=email, phone=phone, dep_id=dep_id, is_active=is_active)
     return responses.Response(status_code=status.HTTP_201_CREATED)
 
 
@@ -142,3 +142,6 @@ async def get_requests_date(date_from1=None, date_to1=None, user: User = Depends
         return responses.Response(status_code=status.HTTP_404_NOT_FOUND)
     json_compatible_res = jsonable_encoder(res)
     return responses.JSONResponse(status_code=status.HTTP_200_OK, content=json_compatible_res)
+
+
+asyncio.create_task(db.user_logout_task())
