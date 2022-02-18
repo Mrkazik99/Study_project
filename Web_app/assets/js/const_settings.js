@@ -18,26 +18,8 @@ const requests_keys_map ={
     'price': 'Wycena',
 }
 const customers_keys_map ={
-    'id': 'Id',
-    'employee': 'Serwisant',
-    'customer': 'Klient',
-    'description': 'Opis',
-    'status': 'Status',
-    'date0': 'Data przyjęcia',
-    'date1': 'Data ostatniej aktualziacji',
-    'date2': 'Data wydania',
-    'price': 'Wycena',
 }
 const employees_keys_map ={
-    'id': 'Id',
-    'employee': 'Serwisant',
-    'customer': 'Klient',
-    'description': 'Opis',
-    'status': 'Status',
-    'date0': 'Data przyjęcia',
-    'date1': 'Data ostatniej aktualziacji',
-    'date2': 'Data wydania',
-    'price': 'Wycena',
 }
 const api_gui_timeout = 5000; //[ms]
 const default_hidden = [4];
