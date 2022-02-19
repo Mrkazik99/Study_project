@@ -11,6 +11,16 @@ function find(query) {
     });
 }
 
+function find_others(query) {
+    $('.data_row').each(function () {
+        if ($(this).html().indexOf(query.value) === -1) {
+            $(this).addClass('hidden');
+        } else {
+            $(this).removeClass('hidden');
+        }
+    });
+}
+
 function pick_status(select) {
     $('.data_row').each(function () {
         if (select.value === '0') {

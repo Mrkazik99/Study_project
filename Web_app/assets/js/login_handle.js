@@ -49,7 +49,7 @@ function submit_login(form) {
             }
         })
         .then(data => {
-            setCookie('authorization', `${data['token']}`, 40);
+            setCookie('authorization', `${data['token']}`, token_time);
             window.location.href='/dashboard.html';
         })
         .catch(function(error) {

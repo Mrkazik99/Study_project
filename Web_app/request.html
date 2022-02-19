@@ -15,7 +15,7 @@
     <script src="assets/js/login_handle.js"></script>
 </head>
 <body>
-<nav></nav>
+<div class="sticky-top"><nav></nav></div>
 <div id="query_result" class="container">
     <div class="row">
         <div class="col-md"></div>
@@ -31,6 +31,7 @@
     </div>
 </div>
 <script>
+    checkToken();
     url = new URL(window.location.href);
     id = url.searchParams.get('id');
     getRequestById(id, false);

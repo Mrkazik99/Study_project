@@ -1,3 +1,5 @@
+import datetime
+
 from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from pydantic import BaseModel
@@ -14,7 +16,7 @@ def token_validity(token):
     try:
         user = jwt.decode(token, options={"verify_signature": False})
         hash_pass = get_employee_username(user['username'])['password']
-        jwt.decode(token, f'{global_secret}{hash_pass}', algorithms=["HS256"])
+        jwt.decode(token, f'{global_secret}{hash_pass}{user["date"]}', algorithms=["HS256"])
         if get_employee_username(username=user['username'])['token'] == token:
             return True
         else:
@@ -29,12 +31,13 @@ def generate_token(user_dict):
     payload = {
         'username': user_dict['username'],
         'email': user_dict['email'],
-        'name': user_dict['name']
+        'name': user_dict['name'],
+        'date': datetime.datetime.now().strftime('%m/%d/%Y_%H:%M:%S')
     }
 
     hash_pass = user_dict['password']
 
-    token = jwt.encode(payload, f'{global_secret}{hash_pass}', algorithm='HS256')
+    token = jwt.encode(payload, f'{global_secret}{hash_pass}{payload["date"]}', algorithm='HS256')
 
     put_employee_token(user_dict['username'], token)
 

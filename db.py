@@ -1,7 +1,9 @@
 from decimal import Decimal
 from pony.orm import *
-from datetime import datetime
+from datetime import datetime, timedelta
 import os
+import jwt
+import asyncio
 
 db = Database()
 
@@ -10,13 +12,14 @@ class Department(db.Entity):
     id = PrimaryKey(int, auto=True)
     name = Required(str)
     workers = Set('Employee')
+    composite_key(id, name)
 
 
 class Employee(db.Entity):
     id = PrimaryKey(int, auto=True)
     username = Required(str, unique=True)
     email = Required(str, unique=True)
-    password = Required(str)  # nie trzymaj hasła, tylko hash hasła i sprawdzaj po hashu
+    password = Required(str)
     department = Required(Department)
     activated = Required(bool)
     token = Optional(str)
@@ -54,26 +57,52 @@ else:
     print("Detected unix based OS")
     db.bind(provider='sqlite', filename='./db/service.db', create_db=True)
 db.generate_mapping(create_tables=True)
-# set_sql_debug(True)
 
 
-@db_session(serializable=False)
+set_sql_debug(True)
+
+
+def token_date(token):
+    return jwt.decode(token, options={"verify_signature": False})['date']
+
+
+async def user_logout_task():
+    while True:
+        print('checking')
+        iterate_tokens()
+        await asyncio.sleep(600)
+
+
+@db_session
+def iterate_tokens():
+    for user in select(user for user in Employee):
+        print('user')
+        if user.token != '':
+            if datetime.now() - datetime.strptime(token_date(user.token), '%m/%d/%Y_%H:%M:%S') >= timedelta(minutes=9999):
+                print(f'outdated token for {user.username}')
+                user.token = ''
+                db.commit()
+    db.flush()
+
+
+@db_session
 def fill_db():
     Department(name='administracja')
     db.flush()
-    # Employee(username='worker6', email='abc4@abc.pl', password='cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e', department=Department[1], activated=True,
-    #          token='', name='worker2')
-    Customer(name='customer2', phone_number='123123123')
+    Employee(username='worker1', email='abc1@abc.pl', password='cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e', department=Department[1], activated=True,
+             token='', name='worker1')
+    Customer(name='customer1', phone_number='123123123')
     db.flush()
     for i in range(2):
-        Request(employee=Employee[3], customer=Customer[1], item="Samsung", description='mgikomndfgo', status=4, date0=datetime.now(),
+        Request(employee=Employee[1], customer=Customer[1], item="Samsung", description='mgikomndfgo', status=4,
+                date0=datetime.now(),
                 date1=datetime.now())
     db.flush()
 
 
 #  ----------------------->Auth section<-----------------------
 
-@db_session()
+@db_session
 def register(username: str, email: str, passwd: str):
     department = Department.get(id=1)
     if department is None:
@@ -110,7 +139,7 @@ def login(username: str, passwd: str, username_login: bool):
             return {'auth': False}
 
 
-@db_session()
+@db_session
 def insert_employee(username: str, email: str, passwd: str, department_id: int):
     department = Department.get(id=department_id)
     employee = Employee(username=username, email=email, password=passwd, department=department)
@@ -119,21 +148,17 @@ def insert_employee(username: str, email: str, passwd: str, department_id: int):
 
 #  ----------------------->Requests section<-----------------------
 
-@db_session()
-def create_request(customer_infos: dict, employee_id: int, item: str, description: str, new_customer: bool):
-    if new_customer:
-        customer = Customer(name=customer_infos['name'], phone_number=customer_infos['phone'],
-                            email=customer_infos['mail'])
-    else:
-        customer = Customer.get(id=customer_infos['id'])
-
-    Request(employee=Employee.get(id=employee_id), customer=customer, item=item, description=description,
-            status=1, date0=datetime.now)
+@db_session
+def create_request(customer_id: int, employee_id: int, item: str, description: str):
+    Request(employee=Employee.get(id=employee_id), customer=Customer.get(id=customer_id), item=item,
+            description=description,
+            status=1, date0=datetime.now, date1=datetime.now)
     db.flush()
 
 
-@db_session()
-def update_request(req_id: int, employee=None, customer=None, item=None, description=None, date0=None, date1=None, date2=None,
+@db_session
+def update_request(req_id: int, employee=None, customer=None, item=None, description=None, date0=None, date1=None,
+                   date2=None,
                    status=None, price=None):
     req = Request.get(id=req_id)
     req.employee = employee if employee else req.employee
@@ -148,7 +173,7 @@ def update_request(req_id: int, employee=None, customer=None, item=None, descrip
     db.flush()
 
 
-@db_session(serializable=True)
+@db_session
 def get_request(req_id: int):
     result = Request.get(id=req_id).to_dict()
     result['customer'] = Customer.get(id=result['customer']).to_dict()['name']
@@ -159,7 +184,7 @@ def get_request(req_id: int):
     return result
 
 
-@db_session(serializable=True)
+@db_session
 def get_requests_person(customer_id: int):
     result = [row.to_dict() for row in
               select(req for req in Request if Request.customer == Customer.get(id=customer_id))]
@@ -169,7 +194,7 @@ def get_requests_person(customer_id: int):
     return result
 
 
-@db_session(serializable=True)
+@db_session
 def get_requests_date(start, end):
     result = [row.to_dict() for row in select(req for req in Request if req.date0 >= start and req.date0 <= end)]
     for req in result:
@@ -180,55 +205,67 @@ def get_requests_date(start, end):
     return result
 
 
+@db_session
+def get_requests_date_and_scope(start, end, user):
+    result = [row.to_dict() for row in select(req for req in Request if req.date0 >= start and req.date0 <= end and req.employee == Employee.get(username=user))]
+    for req in result:
+        req['customer'] = Customer.get(id=req['customer']).to_dict()['name']
+        req['employee'] = Employee.get(id=req['employee']).to_dict()['name']
+        req['date0'] = datetime.strftime(req['date0'], '%m/%d/%Y')
+        req['date1'] = datetime.strftime(req['date1'], '%m/%d/%Y')
+    return result
+
+
 #  ----------------------->Customers section<-----------------------
 
-@db_session()
-def create_customer(customer_infos):
-    Customer(name=customer_infos['name'], phone_number=customer_infos['phone'], email=customer_infos['mail'])
+@db_session
+def create_customer(name, phone, email):
+    Customer(name=name, phone_number=phone, email=email)
     db.flush()
 
 
-@db_session()
+@db_session
 def update_customer():
     ...
 
 
-@db_session(serializable=True)
-def get_customer():
-    ...
+@db_session
+def get_customer(customer_id):
+    return Customer.get(id=customer_id).to_dict()
 
 
-@db_session(serializable=True)
+@db_session
 def get_customers():
     return [row.to_dict() for row in select(req for req in Customer)]
 
+
 #  ----------------------->Employees section<-----------------------
 
-@db_session()
-def create_employee(employee_infos: dict):
-    employee = Employee(username=employee_infos['user'], password=employee_infos['passwd'],
-                        email=employee_infos['mail'], department=Department.get(id=employee_infos['department_id']))
+@db_session
+def create_employee(username: str, password: str, name: str, email: str, phone: str, dep_id: int, is_active: bool):
+    Employee(username=username, password=password, email=email, phone_number=phone, name=name,
+             department=Department.get(id=dep_id), is_active=is_active)
     db.flush()
 
 
-@db_session()
+@db_session
 def update_employee():
     ...
 
 
-@db_session()
+@db_session
 def put_employee_token(username: str, token: str):
     employee = Employee.get(username=username)
     employee.token = token
     db.flush()
 
 
-@db_session()
+@db_session
 def get_employee(username: str, password: str):
     return Employee.get(username=username, password=password).to_dict()
 
 
-@db_session()
+@db_session
 def get_employee_username(username: str):
     return Employee.get(username=username).to_dict()
 
@@ -238,12 +275,12 @@ def get_employee_from_token(token: str):
     return Employee.get(token=token).to_dict()
 
 
-@db_session(serializable=True)
+@db_session
 def get_employees():
     return [row.to_dict() for row in select(req for req in Employee)]
 
 
-@db_session(serializable=True)
+@db_session
 def get_employees_departs():
     result = [row.to_dict() for row in select(req for req in Employee)]
     for employee in result:
@@ -251,26 +288,26 @@ def get_employees_departs():
     return result
 
 
-@db_session()
+@db_session
 def remove_employee():
     ...
 
 
 #  ----------------------->Departments section<-----------------------
 
-@db_session()
+@db_session
 def create_department(department: str):
-    department = Department(name=department)
+    Department(name=department)
     db.flush()
 
 
-@db_session(serializable=True)
+@db_session
 def get_department(department_id: int):
     department = Department.get(id=department_id)
     return department.to_dict()
 
 
-@db_session(serializable=True)
+@db_session
 def get_departments():
     result = []
     for row in select(req for req in Department):
@@ -278,6 +315,6 @@ def get_departments():
     return result
 
 
-@db_session(serializable=True)
+@db_session
 def remove_department():
     ...

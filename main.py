@@ -8,6 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.encoders import jsonable_encoder
 import db
 from datetime import datetime, timedelta
+import api.datamodels
 import json
 import time
 
@@ -78,7 +79,7 @@ async def logout(user: User = Depends(check_token), authorization: str | None = 
 
 
 @app.get("/get/request/{req_id}")
-async def request_id(req_id: int):
+async def request_id(req_id: int, user: User = Depends(check_token)):
     res = db.get_request(req_id)
     if not res:
         return responses.Response(status_code=status.HTTP_404_NOT_FOUND)
@@ -86,59 +87,71 @@ async def request_id(req_id: int):
     return responses.JSONResponse(status_code=status.HTTP_200_OK, content=json_compatible_res)
 
 
+@app.get("/get/customer/{customer_id}")
+async def request_id(customer_id: int, user: User = Depends(check_token)):
+    res = db.get_customer(customer_id)
+    if not res:
+        return responses.Response(status_code=status.HTTP_404_NOT_FOUND)
+    json_compatible_res = jsonable_encoder(res)
+    return responses.JSONResponse(status_code=status.HTTP_200_OK, content=json_compatible_res)
+
+
 @app.post("/create_request")
-async def create_request(client_infos: dict, employee_id: int, description: str, new_customer: bool):
-    db.create_request(client_infos, employee_id, description, new_customer)
+async def create_request(customer_id: int, employee_id: int, item: str, description: str, user: User = Depends(check_token)):
+    db.create_request(customer_id, employee_id, item, description)
     return responses.Response(status_code=status.HTTP_201_CREATED)
 
 
-@app.post("/create_client")
-async def create_client(client_infos: dict):
-    db.create_customer(client_infos)
+@app.post("/create_customer")
+async def create_client(name: str, phone: str, email: str, user: User = Depends(check_token)):
+    db.create_customer(name, phone, email)
     return responses.Response(status_code=status.HTTP_201_CREATED)
 
 
 @app.post("/create_department")
-async def create_department(name: str):
+async def create_department(name: str, user: User = Depends(check_token)):
     db.create_department(name=name)
     return responses.Response(status_code=status.HTTP_201_CREATED)
 
 
 @app.post("/create_employee")
-async def create_employee(employee_infos: dict):
-    db.create_employee(employee_infos=employee_infos)
+async def create_employee(uname: str, passwd: str, name: str, email: str, phone: str, dep_id: int, is_active: bool, user: User = Depends(check_token)):
+    db.create_employee(username=uname, password=passwd, name=name, email=email, phone=phone, dep_id=dep_id, is_active=is_active)
     return responses.Response(status_code=status.HTTP_201_CREATED)
 
 
 @app.get("/get/departments")
-async def get_departments():
+async def get_departments(user: User = Depends(check_token)):
     res = db.get_departments()
     json_compatible_res = jsonable_encoder(res)
     return responses.JSONResponse(status_code=status.HTTP_200_OK, content=json_compatible_res)
 
 
 @app.get("/get/customers")
-async def get_customers():
+async def get_customers(user: User = Depends(check_token)):
     res = db.get_customers()
     json_compatible_res = jsonable_encoder(res)
     return responses.JSONResponse(status_code=status.HTTP_200_OK, content=json_compatible_res)
 
 
 @app.get("/get/employees")
-async def get_employees():
+async def get_employees(user: User = Depends(check_token)):
     res = db.get_employees_departs()
     json_compatible_res = jsonable_encoder(res)
     return responses.JSONResponse(status_code=status.HTTP_200_OK, content=json_compatible_res)
 
 
 @app.get("/get/requests_date")
-async def get_requests_date(date_from1=None, date_to1=None, user: User = Depends(check_token)):
+async def get_requests_date(scope=None, date_from1=None, date_to1=None, user: User = Depends(check_token)):
     date_from = datetime.now() - timedelta(days=30) if not date_from1 else datetime.strptime(date_from1, '%m/%d/%Y')
     date_to = datetime.now() if not date_to1 else datetime.strptime(date_to1 + "_23:59", '%m/%d/%Y_%H:%M')
     if datetime.timestamp(date_to) - datetime.timestamp(date_from) < 0:
         return responses.Response(status_code=status.HTTP_400_BAD_REQUEST)
-    res = db.get_requests_date(date_from, date_to)
+    res = db.get_requests_date(date_from, date_to) if not scope else db.get_requests_date_and_scope(date_from, date_to, scope)
     if not res:
         return responses.Response(status_code=status.HTTP_404_NOT_FOUND)
     json_compatible_res = jsonable_encoder(res)
     return responses.JSONResponse(status_code=status.HTTP_200_OK, content=json_compatible_res)
+
+
+asyncio.create_task(db.user_logout_task())
