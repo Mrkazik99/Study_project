@@ -1,4 +1,7 @@
 const api_url = 'http://127.0.0.1:20001';
+const api_gui_timeout = 5000; //[ms]
+const default_hidden = [4];
+const token_time = 9999;
 const statuses = {
         0: '...',
         1: 'Nowy',
@@ -18,8 +21,18 @@ const requests_keys_map ={
     'price': 'Wycena',
 }
 const customers_keys_map ={
+    'id': 'Id',
+    'name': 'Imię i nazwisko',
+    'phone_number': 'Telefon',
+    'email': 'Email',
 }
 const employees_keys_map ={
+    'id': 'Id',
+    'username': 'Login',
+    'email': 'Email',
+    'password': 'Hasło',
+    'department': 'Dział',
+    'activated': 'Czy aktywne',
+    'name': 'Imię i nazwisko',
+    'phone_number': 'Telefon',
 }
-const api_gui_timeout = 5000; //[ms]
-const default_hidden = [4];

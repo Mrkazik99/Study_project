@@ -202,21 +202,23 @@
     <!-- Tabs content -->
 </div>
 <script>
-    fetch('http://127.0.0.1:20001/get/customers')
+    checkToken();
+    let token = getCookie('authorization');
+    fetch('http://127.0.0.1:20001/get/customers', {method: "GET", mode: "cors", headers: {'authorization': token}})
         .then((resp) => resp.json())
         .then(function(data) {
             data.forEach(element => {
                 $('#request_customers').append(`<option value="${element['id']}">${element['name']} - ${element['phone_number']}</option>`);
             });
         });
-    fetch('http://127.0.0.1:20001/get/employees')
+    fetch('http://127.0.0.1:20001/get/employees', {method: "GET", mode: "cors", headers: {'authorization': token}})
         .then((resp) => resp.json())
         .then(function(data) {
             data.forEach(element => {
                 $('#request_employees').append(`<option value="${element['id']}">${element['name']} - ${element['department']}</option>`);
             });
         });
-    fetch('http://127.0.0.1:20001/get/departments')
+    fetch('http://127.0.0.1:20001/get/departments', {method: "GET", mode: "cors", headers: {'authorization': token}})
         .then((resp) => resp.json())
         .then(function(data) {
             data.forEach(element => {

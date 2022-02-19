@@ -12,7 +12,6 @@ with open("rsa_key.txt", "r") as f:
 app = FastAPI()
 
 
-
 def token_validity(token):
     try:
         user = jwt.decode(token, options={"verify_signature": False})

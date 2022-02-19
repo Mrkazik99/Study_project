@@ -4,3 +4,4 @@ uvicorn[standard]
 pony
 asyncio
 Starlette
+pydantic

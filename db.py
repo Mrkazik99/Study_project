@@ -12,13 +12,14 @@ class Department(db.Entity):
     id = PrimaryKey(int, auto=True)
     name = Required(str)
     workers = Set('Employee')
+    composite_key(id, name)
 
 
 class Employee(db.Entity):
     id = PrimaryKey(int, auto=True)
     username = Required(str, unique=True)
     email = Required(str, unique=True)
-    password = Required(str)  # nie trzymaj hasła, tylko hash hasła i sprawdzaj po hashu
+    password = Required(str)
     department = Required(Department)
     activated = Required(bool)
     token = Optional(str)
@@ -58,7 +59,7 @@ else:
 db.generate_mapping(create_tables=True)
 
 
-# set_sql_debug(True)
+set_sql_debug(True)
 
 
 def token_date(token):
@@ -77,7 +78,7 @@ def iterate_tokens():
     for user in select(user for user in Employee):
         print('user')
         if user.token != '':
-            if datetime.now() - datetime.strptime(token_date(user.token), '%m/%d/%Y_%H:%M:%S') >= timedelta(minutes=40):
+            if datetime.now() - datetime.strptime(token_date(user.token), '%m/%d/%Y_%H:%M:%S') >= timedelta(minutes=9999):
                 print(f'outdated token for {user.username}')
                 user.token = ''
                 db.commit()
@@ -88,12 +89,12 @@ def iterate_tokens():
 def fill_db():
     Department(name='administracja')
     db.flush()
-    # Employee(username='worker6', email='abc4@abc.pl', password='cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e', department=Department[1], activated=True,
-    #          token='', name='worker2')
-    Customer(name='customer2', phone_number='123123123')
+    Employee(username='worker1', email='abc1@abc.pl', password='cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e', department=Department[1], activated=True,
+             token='', name='worker1')
+    Customer(name='customer1', phone_number='123123123')
     db.flush()
     for i in range(2):
-        Request(employee=Employee[3], customer=Customer[1], item="Samsung", description='mgikomndfgo', status=4,
+        Request(employee=Employee[1], customer=Customer[1], item="Samsung", description='mgikomndfgo', status=4,
                 date0=datetime.now(),
                 date1=datetime.now())
     db.flush()
@@ -204,6 +205,17 @@ def get_requests_date(start, end):
     return result
 
 
+@db_session
+def get_requests_date_and_scope(start, end, user):
+    result = [row.to_dict() for row in select(req for req in Request if req.date0 >= start and req.date0 <= end and req.employee == Employee.get(username=user))]
+    for req in result:
+        req['customer'] = Customer.get(id=req['customer']).to_dict()['name']
+        req['employee'] = Employee.get(id=req['employee']).to_dict()['name']
+        req['date0'] = datetime.strftime(req['date0'], '%m/%d/%Y')
+        req['date1'] = datetime.strftime(req['date1'], '%m/%d/%Y')
+    return result
+
+
 #  ----------------------->Customers section<-----------------------
 
 @db_session
@@ -218,8 +230,8 @@ def update_customer():
 
 
 @db_session
-def get_customer():
-    ...
+def get_customer(customer_id):
+    return Customer.get(id=customer_id).to_dict()
 
 
 @db_session
