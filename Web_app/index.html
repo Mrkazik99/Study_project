@@ -7,6 +7,8 @@
     <link rel="stylesheet" href="assets/css/jquery-ui.css">
     <link rel="stylesheet" href="assets/css/mdb.min.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
+    <link rel="stylesheet" href="assets/css/swal.css">
+    <script src="assets/js/swal.js"></script>
     <script src="assets/js/jquery.js"></script>
     <script src="assets/js/script.js"></script>
     <script src="assets/js/const_settings.js"></script>
@@ -45,22 +47,25 @@
         <button type="button" class="btn btn-primary btn-block" onclick="submit_login(this.form)">Sign in</button>
     </form>
 </div>
-<div id="dialog_parent"></div>
 <script>
-    message = getCookie('message');
+    let message = getCookie('message');
     if (message !== '') {
-        $('#dialog_parent').html(`<div id="dialog" title="Odpowiedź serwera"><p>${message}</p></div>`);
-        $( function() {
-            $( "#dialog" ).dialog({
-                dialogClass: "no-close",
-                modal: true,
-                buttons: {
-                    Ok: function() {
-                        $(this).dialog("close");
-                    }
-                }
-            });
-        });
+        const Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 5000,
+            timerProgressBar: true,
+            didOpen: (toast) => {
+                toast.addEventListener('mouseenter', Swal.stopTimer)
+                toast.addEventListener('mouseleave', Swal.resumeTimer)
+            }
+        })
+
+        Toast.fire({
+            icon: message.split(':')[0],
+            title: message.split(':')[1]
+        })
         setCookie('message', '');
     }
 </script>

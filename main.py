@@ -8,11 +8,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.encoders import jsonable_encoder
 import db
 from datetime import datetime, timedelta
+from api.datamodels import *
 import api.datamodels
 import json
 import time
 
 from api.login import generate_token, token_validity, User, remove_token
+
+close_statuses = [4, 5]
 
 app = FastAPI()
 
@@ -29,8 +32,22 @@ app.add_middleware(
 
 @app.get("/")
 async def root():
+    print(f'{datetime.now()} -- db_fill called')
     db.fill_db()
-    return responses.JSONResponse(status_code=status.HTTP_201_CREATED, content={'message': 'Done!'})
+    return responses.JSONResponse(status_code=status.HTTP_201_CREATED)
+
+
+@app.get("/admin/initialize")
+async def initialize():
+    print(f'{datetime.now()} -- Calling initialization')
+    init_app = db.initialize()
+    if init_app:
+        print(f'{datetime.now()} -- APP has been initialized')
+        return responses.Response(status_code=status.HTTP_201_CREATED)
+    else:
+        print(f'{datetime.now()} -- APP initialization failed')
+        return responses.JSONResponse(status_code=status.HTTP_409_CONFLICT,
+                                      content={'message': 'APP has been already initialized'})
 
 
 @app.post("/login")
@@ -40,12 +57,14 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
     user_dict = db.get_employee(username=form_data.username, password=form_data.password)
     if not user_dict:
         raise HTTPException(status_code=400, detail="Incorrect username or password")
+    if not user_dict['activated']:
+        raise HTTPException(status_code=400, detail="Incorrect username or password")
     if not user_dict['password'] == form_data.password:
         raise HTTPException(status_code=400, detail="Incorrect username or password")
 
     token = generate_token(user_dict)
 
-    return {"access_token": user_dict['username'], "token_type": "bearer", "token": token}
+    return responses.JSONResponse(status_code=status.HTTP_200_OK, content={"access_token": user_dict['username'], "token_type": "bearer", "token": token})
 
 
 @app.get("/check_token")
@@ -87,37 +106,91 @@ async def request_id(req_id: int, user: User = Depends(check_token)):
     return responses.JSONResponse(status_code=status.HTTP_200_OK, content=json_compatible_res)
 
 
-@app.get("/get/customer/{customer_id}")
-async def request_id(customer_id: int, user: User = Depends(check_token)):
-    res = db.get_customer(customer_id)
+@app.get("/get/customer/{cust_id}")
+async def customer_id(cust_id: int, user: User = Depends(check_token)):
+    res = db.get_customer(cust_id)
     if not res:
         return responses.Response(status_code=status.HTTP_404_NOT_FOUND)
     json_compatible_res = jsonable_encoder(res)
     return responses.JSONResponse(status_code=status.HTTP_200_OK, content=json_compatible_res)
 
 
-@app.post("/create_request")
-async def create_request(customer_id: int, employee_id: int, item: str, description: str, user: User = Depends(check_token)):
-    db.create_request(customer_id, employee_id, item, description)
-    return responses.Response(status_code=status.HTTP_201_CREATED)
+@app.get("/get/employee/{emp_id}")
+async def employee_id(emp_id: int, user: User = Depends(check_token)):
+    res = db.get_employee_by_id(emp_id)
+    if not res:
+        return responses.Response(status_code=status.HTTP_404_NOT_FOUND)
+    json_compatible_res = jsonable_encoder(res)
+    return responses.JSONResponse(status_code=status.HTTP_200_OK, content=json_compatible_res)
 
 
-@app.post("/create_customer")
-async def create_client(name: str, phone: str, email: str, user: User = Depends(check_token)):
-    db.create_customer(name, phone, email)
-    return responses.Response(status_code=status.HTTP_201_CREATED)
+@app.post("/create/request")
+async def create_request(request: NewRequest = Depends(NewRequest.as_form), user: User = Depends(check_token)):
+    res = db.create_request_db(request.id_customer, request.id_employee, request.item, request.description)
+    if res:
+        return responses.Response(status_code=status.HTTP_201_CREATED)
+    else:
+        return responses.Response(status_code=status.HTTP_400_BAD_REQUEST)
 
 
-@app.post("/create_department")
-async def create_department(name: str, user: User = Depends(check_token)):
-    db.create_department(name=name)
-    return responses.Response(status_code=status.HTTP_201_CREATED)
+@app.post("/create/customer")
+async def create_client(customer: NewCustomer = Depends(NewCustomer.as_form), user: User = Depends(check_token)):
+    res = db.create_customer_db(customer.name, customer.phone_number, customer.email)
+    if res:
+        return responses.Response(status_code=status.HTTP_201_CREATED)
+    else:
+        return responses.Response(status_code=status.HTTP_400_BAD_REQUEST)
 
 
-@app.post("/create_employee")
-async def create_employee(uname: str, passwd: str, name: str, email: str, phone: str, dep_id: int, is_active: bool, user: User = Depends(check_token)):
-    db.create_employee(username=uname, password=passwd, name=name, email=email, phone=phone, dep_id=dep_id, is_active=is_active)
-    return responses.Response(status_code=status.HTTP_201_CREATED)
+@app.post("/create/department")
+async def create_department(department: NewDepartment = Depends(NewDepartment.as_form), user: User = Depends(check_token)):
+    res = db.create_department_db(department.name)
+    if res:
+        return responses.Response(status_code=status.HTTP_201_CREATED)
+    else:
+        return responses.Response(status_code=status.HTTP_400_BAD_REQUEST)
+
+
+@app.post("/create/employee")
+async def create_employee(employee: NewEmployee = Depends(NewEmployee.as_form), user: User = Depends(check_token)):
+    is_admin = True if employee.admin_permissions else False
+    res = db.create_employee_db(employee.username, employee.password, employee.name, employee.email, employee.phone_number,
+                                employee.department_id, employee.activated, is_admin)
+    if res:
+        return responses.Response(status_code=status.HTTP_201_CREATED)
+    else:
+        return responses.Response(status_code=status.HTTP_400_BAD_REQUEST)
+
+
+@app.post("/update/request")
+async def update_request(request: EditRequest = Depends(EditRequest.as_form), user: User = Depends(check_token)):
+    if status in close_statuses:
+        date2 = datetime.now()
+    else:
+        date2 = None
+    res = db.update_request_db(request.id_entity, request.employee, request.description, date2, request.status, request.price)
+    if res:
+        return responses.Response(status_code=status.HTTP_200_OK)
+    else:
+        return responses.Response(status_code=status.HTTP_400_BAD_REQUEST)
+
+
+@app.post("/update/customer")
+async def update_client(customer: EditCustomer = Depends(EditCustomer.as_form), user: User = Depends(check_token)):
+    res = db.update_customer_db(customer.id_entity, customer.name, customer.phone_number, customer.email)
+    if res:
+        return responses.Response(status_code=status.HTTP_200_OK)
+    else:
+        return responses.Response(status_code=status.HTTP_400_BAD_REQUEST)
+
+
+@app.post("/update/employee")
+async def update_employee(employee: EditEmployee = Depends(EditEmployee.as_form), user: User = Depends(check_token)):
+    res = db.update_employee_db(employee.id_entity, employee.email, employee.department, employee.activated, employee.admin_permissions, employee.name, employee.phone_number)
+    if res:
+        return responses.Response(status_code=status.HTTP_200_OK)
+    else:
+        return responses.Response(status_code=status.HTTP_400_BAD_REQUEST)
 
 
 @app.get("/get/departments")
@@ -141,13 +214,19 @@ async def get_employees(user: User = Depends(check_token)):
     return responses.JSONResponse(status_code=status.HTTP_200_OK, content=json_compatible_res)
 
 
+@app.post("/edit/employee")
+async def edit_employee(payload: EditEmployee):
+    new_payload = {}
+
+
 @app.get("/get/requests_date")
 async def get_requests_date(scope=None, date_from1=None, date_to1=None, user: User = Depends(check_token)):
     date_from = datetime.now() - timedelta(days=30) if not date_from1 else datetime.strptime(date_from1, '%m/%d/%Y')
     date_to = datetime.now() if not date_to1 else datetime.strptime(date_to1 + "_23:59", '%m/%d/%Y_%H:%M')
     if datetime.timestamp(date_to) - datetime.timestamp(date_from) < 0:
         return responses.Response(status_code=status.HTTP_400_BAD_REQUEST)
-    res = db.get_requests_date(date_from, date_to) if not scope else db.get_requests_date_and_scope(date_from, date_to, scope)
+    res = db.get_requests_date(date_from, date_to) if not scope else db.get_requests_date_and_scope(date_from, date_to,
+                                                                                                    scope)
     if not res:
         return responses.Response(status_code=status.HTTP_404_NOT_FOUND)
     json_compatible_res = jsonable_encoder(res)

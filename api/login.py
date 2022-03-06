@@ -25,6 +25,7 @@ def token_validity(token):
         return False
     except Exception as e:
         print(e)
+        return False
 
 
 def generate_token(user_dict):
@@ -32,7 +33,8 @@ def generate_token(user_dict):
         'username': user_dict['username'],
         'email': user_dict['email'],
         'name': user_dict['name'],
-        'date': datetime.datetime.now().strftime('%m/%d/%Y_%H:%M:%S')
+        'date': datetime.datetime.now().strftime('%m/%d/%Y_%H:%M:%S'),
+        'admin': user_dict['admin_permissions']
     }
 
     hash_pass = user_dict['password']

@@ -14,6 +14,7 @@ const requests_keys_map ={
     'employee': 'Serwisant',
     'customer': 'Klient',
     'description': 'Opis',
+    'item': 'Przedmiot',
     'status': 'Status',
     'date0': 'Data przyjęcia',
     'date1': 'Data ostatniej aktualziacji',
@@ -33,6 +34,7 @@ const employees_keys_map ={
     'password': 'Hasło',
     'department': 'Dział',
     'activated': 'Czy aktywne',
+    'admin_permissions': 'Czy admin',
     'name': 'Imię i nazwisko',
     'phone_number': 'Telefon',
 }
