@@ -1,5 +1,6 @@
 from decimal import Decimal
 from pony.orm import *
+from pony.orm.core import TransactionError
 from datetime import datetime, timedelta
 import os
 import jwt
@@ -10,9 +11,8 @@ db = Database()
 
 class Department(db.Entity):
     id = PrimaryKey(int, auto=True)
-    name = Required(str)
+    name = Required(str, unique=True)
     workers = Set('Employee')
-    composite_key(id, name)
 
 
 class Employee(db.Entity):
@@ -22,6 +22,7 @@ class Employee(db.Entity):
     password = Required(str)
     department = Required(Department)
     activated = Required(bool)
+    admin_permissions = Required(bool)
     token = Optional(str)
     name = Optional(str)
     phone_number = Optional(str)
@@ -32,7 +33,7 @@ class Employee(db.Entity):
 class Customer(db.Entity):
     id = PrimaryKey(int, auto=True)
     name = Required(str)
-    phone_number = Required(str)
+    phone_number = Required(int)
     email = Optional(str)
     requests = Set('Request')
 
@@ -59,7 +60,7 @@ else:
 db.generate_mapping(create_tables=True)
 
 
-set_sql_debug(True)
+# set_sql_debug(True)
 
 
 def token_date(token):
@@ -68,7 +69,7 @@ def token_date(token):
 
 async def user_logout_task():
     while True:
-        print('checking')
+        print(f'{datetime.now()} -- checking for inactive users')
         iterate_tokens()
         await asyncio.sleep(600)
 
@@ -78,7 +79,8 @@ def iterate_tokens():
     for user in select(user for user in Employee):
         print('user')
         if user.token != '':
-            if datetime.now() - datetime.strptime(token_date(user.token), '%m/%d/%Y_%H:%M:%S') >= timedelta(minutes=9999):
+            if datetime.now() - datetime.strptime(token_date(user.token), '%m/%d/%Y_%H:%M:%S') >= timedelta(
+                    minutes=9999):
                 print(f'outdated token for {user.username}')
                 user.token = ''
                 db.commit()
@@ -89,15 +91,31 @@ def iterate_tokens():
 def fill_db():
     Department(name='administracja')
     db.flush()
-    Employee(username='worker1', email='abc1@abc.pl', password='cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e', department=Department[1], activated=True,
+    Employee(username='worker1', email='abc1@abc.pl',
+             password='fbacf4a44108031458024d7528c0a6e08ccd91f9c2b42d4d39f514d6db2a7ad893fac14038bec2512300af67e871d39163dcaf0bf0ff532986f10a9f5ba85314',
+             department=Department[1], activated=True, admin_permissions=True,
              token='', name='worker1')
     Customer(name='customer1', phone_number='123123123')
     db.flush()
     for i in range(2):
-        Request(employee=Employee[1], customer=Customer[1], item="Samsung", description='mgikomndfgo', status=4,
+        Request(employee=Employee[1], customer=Customer[1], item="Samsung", description='mgikomndfgo', status=1,
                 date0=datetime.now(),
                 date1=datetime.now())
     db.flush()
+
+
+@db_session
+def initialize():
+    if not Department.select().exists():
+        Department(name='administracja')
+        db.flush()
+        Employee(username='admin', email='admin@admin.pl',
+                 password='fbacf4a44108031458024d7528c0a6e08ccd91f9c2b42d4d39f514d6db2a7ad893fac14038bec2512300af67e871d39163dcaf0bf0ff532986f10a9f5ba85314',
+                 department=Department[1], activated=True, admin_permissions=True, token='', name='admin')
+        db.flush()
+        return True
+    else:
+        return False
 
 
 #  ----------------------->Auth section<-----------------------
@@ -114,29 +132,10 @@ def register(username: str, email: str, passwd: str):
 
 @db_session
 def is_employee(username: str, password: str):
-    return Employee.exists(username=username, password=password)
-
-
-@db_session
-def login(username: str, passwd: str, username_login: bool):
-    if username_login:
-        user = Employee.select(lambda e: e.username == username)
-        if user == 1:
-            if passwd == user.password:
-                return {'auth': True}
-            else:
-                return {'auth': False}
-        else:
-            return {'auth': False}
-    else:
-        user = Employee.select(lambda e: e.email == username)
-        if user == 1:
-            if passwd == user.password:
-                return {'auth': True}
-            else:
-                return {'auth': False}
-        else:
-            return {'auth': False}
+    try:
+        return Employee.exists(username=username, password=password)
+    except Exception as e:
+        raise Exception('Something is wrong') from e
 
 
 @db_session
@@ -149,84 +148,112 @@ def insert_employee(username: str, email: str, passwd: str, department_id: int):
 #  ----------------------->Requests section<-----------------------
 
 @db_session
-def create_request(customer_id: int, employee_id: int, item: str, description: str):
-    Request(employee=Employee.get(id=employee_id), customer=Customer.get(id=customer_id), item=item,
-            description=description,
-            status=1, date0=datetime.now, date1=datetime.now)
-    db.flush()
+def create_request_db(customer_id: int, employee_id: int, item: str, description: str):
+    try:
+        Request(employee=Employee.get(id=employee_id), customer=Customer.get(id=customer_id), item=item,
+                description=description, status=1, date0=datetime.now(), date1=datetime.now())
+        db.flush()
+        return True
+    except Exception as e:
+        raise Exception('Something is wrong') from e
 
 
 @db_session
-def update_request(req_id: int, employee=None, customer=None, item=None, description=None, date0=None, date1=None,
-                   date2=None,
-                   status=None, price=None):
-    req = Request.get(id=req_id)
-    req.employee = employee if employee else req.employee
-    req.customer = customer if customer else req.customer
-    req.item = item if item else req.item
-    req.description = description if description else req.description
-    req.date0 = date0 if date0 else req.date0
-    req.date1 = date1 if date1 else req.date1
-    req.date2 = date2 if date2 else req.date2
-    req.status = status if status else req.status
-    req.price = price if price else req.price
-    db.flush()
+def update_request_db(req_id: int, employee=None, description=None, date2=None, status=None, price=None):
+    try:
+        req = Request.get(id=req_id)
+        req.employee = Employee.get(id=employee) if employee else req.employee
+        req.description = description if description else req.description
+        req.date1 = datetime.now()
+        req.date2 = date2 if date2 else req.date2
+        req.status = status if status else req.status
+        req.price = price if price else req.price
+        db.flush()
+        return True
+    except Exception as e:
+        raise Exception('Something is wrong') from e
 
 
 @db_session
 def get_request(req_id: int):
-    result = Request.get(id=req_id).to_dict()
-    result['customer'] = Customer.get(id=result['customer']).to_dict()['name']
-    result['employee'] = Employee.get(id=result['employee']).to_dict()['name']
-    result['date0'] = datetime.strftime(result['date0'], '%m/%d/%Y')
-    result['date1'] = datetime.strftime(result['date1'], '%m/%d/%Y')
-    result['date2'] = datetime.strftime(result['date2'], '%m/%d/%Y') if result['date2'] else None
-    return result
+    try:
+        result = Request.get(id=req_id).to_dict()
+        result['customer'] = Customer.get(id=result['customer']).to_dict()
+        result['employee'] = Employee.get(id=result['employee']).to_dict()
+        result['date0'] = datetime.strftime(result['date0'], '%m/%d/%Y')
+        result['date1'] = datetime.strftime(result['date1'], '%m/%d/%Y')
+        result['date2'] = datetime.strftime(result['date2'], '%m/%d/%Y') if result['date2'] else None
+        return result
+    except Exception as e:
+        raise Exception('Something is wrong') from e
 
 
 @db_session
 def get_requests_person(customer_id: int):
-    result = [row.to_dict() for row in
-              select(req for req in Request if Request.customer == Customer.get(id=customer_id))]
-    for req in result:
-        req['customer'] = Customer.get(id=req['customer']).to_dict()['name']
-        req['employee'] = Employee.get(id=req['employee']).to_dict()['name']
-    return result
+    try:
+        result = [row.to_dict() for row in
+                  select(req for req in Request if Request.customer == Customer.get(id=customer_id))]
+        for req in result:
+            req['customer'] = Customer.get(id=req['customer']).to_dict()['name']
+            req['employee'] = Employee.get(id=req['employee']).to_dict()['name']
+        return result
+    except Exception as e:
+        raise Exception('Something is wrong') from e
 
 
 @db_session
 def get_requests_date(start, end):
-    result = [row.to_dict() for row in select(req for req in Request if req.date0 >= start and req.date0 <= end)]
-    for req in result:
-        req['customer'] = Customer.get(id=req['customer']).to_dict()['name']
-        req['employee'] = Employee.get(id=req['employee']).to_dict()['name']
-        req['date0'] = datetime.strftime(req['date0'], '%m/%d/%Y')
-        req['date1'] = datetime.strftime(req['date1'], '%m/%d/%Y')
-    return result
+    try:
+        result = [row.to_dict() for row in select(req for req in Request if req.date0 >= start and req.date0 <= end)]
+        for req in result:
+            req['customer'] = Customer.get(id=req['customer']).to_dict()['name']
+            req['employee'] = Employee.get(id=req['employee']).to_dict()['name']
+            req['date0'] = datetime.strftime(req['date0'], '%m/%d/%Y')
+            req['date1'] = datetime.strftime(req['date1'], '%m/%d/%Y')
+        return result
+    except Exception as e:
+        return None
 
 
 @db_session
 def get_requests_date_and_scope(start, end, user):
-    result = [row.to_dict() for row in select(req for req in Request if req.date0 >= start and req.date0 <= end and req.employee == Employee.get(username=user))]
-    for req in result:
-        req['customer'] = Customer.get(id=req['customer']).to_dict()['name']
-        req['employee'] = Employee.get(id=req['employee']).to_dict()['name']
-        req['date0'] = datetime.strftime(req['date0'], '%m/%d/%Y')
-        req['date1'] = datetime.strftime(req['date1'], '%m/%d/%Y')
-    return result
+    try:
+        result = [row.to_dict() for row in select(req for req in Request if
+                                                  req.date0 >= start and req.date0 <= end and req.employee == Employee.get(
+                                                      username=user))]
+        for req in result:
+            req['customer'] = Customer.get(id=req['customer']).to_dict()['name']
+            req['employee'] = Employee.get(id=req['employee']).to_dict()['name']
+            req['date0'] = datetime.strftime(req['date0'], '%m/%d/%Y')
+            req['date1'] = datetime.strftime(req['date1'], '%m/%d/%Y')
+        return result
+    except Exception as e:
+        return None
 
 
 #  ----------------------->Customers section<-----------------------
 
 @db_session
-def create_customer(name, phone, email):
-    Customer(name=name, phone_number=phone, email=email)
-    db.flush()
+def create_customer_db(name, phone, email):
+    try:
+        Customer(name=name, phone_number=phone, email=email)
+        db.flush()
+        return True
+    except TransactionIntegrityError:
+        return False
 
 
 @db_session
-def update_customer():
-    ...
+def update_customer_db(customer_id, name, phone, email):
+    try:
+        customer = Customer.get(id=customer_id)
+        customer.name = name if name else customer.name
+        customer.phone_number = phone if phone else customer.phone
+        customer.email = email if email else customer.email
+        db.flush()
+        return True
+    except Exception as e:
+        raise Exception('Something is wrong') from e
 
 
 @db_session
@@ -242,15 +269,31 @@ def get_customers():
 #  ----------------------->Employees section<-----------------------
 
 @db_session
-def create_employee(username: str, password: str, name: str, email: str, phone: str, dep_id: int, is_active: bool):
-    Employee(username=username, password=password, email=email, phone_number=phone, name=name,
-             department=Department.get(id=dep_id), is_active=is_active)
-    db.flush()
+def create_employee_db(uname: str, password: str, name: str, email: str, phone: str, dep_id: int, active: bool,
+                       admin: bool):
+    try:
+        Employee(username=uname, password=password, email=email, phone_number=phone, name=name,
+                 department=Department.get(id=dep_id), activated=active, admin_permissions=admin)
+        db.flush()
+        return True
+    except TransactionIntegrityError:
+        return False
 
 
 @db_session
-def update_employee():
-    ...
+def update_employee_db(employee_id, email, department_id, activated, admin, name, phone):
+    try:
+        employee = Employee.get(id=employee_id)
+        employee.name = name if name else employee.name
+        employee.phone = phone if phone else employee.phone
+        employee.email = email if email else employee.email
+        employee.department = Department.get(id=department_id) if department_id else employee.department
+        employee.activated = activated
+        employee.admin_permissions = admin
+        db.flush()
+        return True
+    except Exception as e:
+        raise Exception('Something is wrong') from e
 
 
 @db_session
@@ -262,17 +305,36 @@ def put_employee_token(username: str, token: str):
 
 @db_session
 def get_employee(username: str, password: str):
-    return Employee.get(username=username, password=password).to_dict()
+    try:
+        return Employee.get(username=username, password=password).to_dict()
+    except Exception as e:
+        return None
+
+
+@db_session
+def get_employee_by_id(employee_id: int):
+    try:
+        result = Employee.get(id=employee_id).to_dict()
+        result['department'] = Department.get(id=result['department']).to_dict()
+        return result
+    except Exception as e:
+        return None
 
 
 @db_session
 def get_employee_username(username: str):
-    return Employee.get(username=username).to_dict()
+    try:
+        return Employee.get(username=username).to_dict()
+    except Exception as e:
+        return None
 
 
 @db_session
 def get_employee_from_token(token: str):
-    return Employee.get(token=token).to_dict()
+    try:
+        return Employee.get(token=token).to_dict()
+    except Exception as e:
+        return None
 
 
 @db_session
@@ -288,23 +350,21 @@ def get_employees_departs():
     return result
 
 
-@db_session
-def remove_employee():
-    ...
-
-
 #  ----------------------->Departments section<-----------------------
 
 @db_session
-def create_department(department: str):
-    Department(name=department)
-    db.flush()
+def create_department_db(department: str):
+    try:
+        Department(name=department)
+        db.flush()
+        return True
+    except TransactionIntegrityError:
+        return False
 
 
 @db_session
 def get_department(department_id: int):
-    department = Department.get(id=department_id)
-    return department.to_dict()
+    return Department.get(id=department_id).to_dict()
 
 
 @db_session
@@ -313,8 +373,3 @@ def get_departments():
     for row in select(req for req in Department):
         result.append(row.to_dict())
     return result
-
-
-@db_session
-def remove_department():
-    ...
