@@ -1,6 +1,8 @@
 from decimal import Decimal
 from pony.orm import *
 from datetime import datetime, timedelta
+from service_management_system import IS_DEV
+import os
 import jwt
 import asyncio
 
@@ -49,7 +51,15 @@ class Request(db.Entity):
     price = Optional(Decimal)
 
 
-db.bind(provider='mysql', host='service_db', user='service_user', passwd='6EgF48arFnP7Ew', db='service_database')
+if IS_DEV:
+    if os.name == "nt":
+        print("Detected windows OS")
+        db.bind(provider='sqlite', filename='service.db', create_db=True)
+    else:
+        print("Detected unix based OS")
+        db.bind(provider='sqlite', filename='./db/service.db', create_db=True)
+else:
+    db.bind(provider='mysql', host='service_db', user='service_user', passwd='6EgF48arFnP7Ew', db='service_database')
 db.generate_mapping(create_tables=True)
 
 
