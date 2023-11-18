@@ -2,7 +2,7 @@
 /web_app/node_modules/
 /api/venv/
 /api/__pycache__/
-/api/service_management_system/__pycahce__/
+/api/service_management_system/__pycache__/
 /api/service_management_system.egg-info/
 /api/build/
 /api/service_management_system/service.db
