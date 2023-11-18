@@ -1,5 +1,4 @@
 /.idea/
-/Web_app_old/
 /web_app/node_modules/
 /api/venv/
 /api/__pycache__/

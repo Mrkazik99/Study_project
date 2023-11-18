@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Page</title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/jquery-ui.css">
+    <link rel="stylesheet" href="assets/css/mdb.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
+    <link rel="stylesheet" href="assets/css/swal.css">
+    <script src="assets/js/swal.js"></script>
+    <script src="assets/js/jquery.js"></script>
+    <script src="assets/js/script.js"></script>
+    <script src="assets/js/const_settings.js"></script>
+    <script src="assets/js/jquery-ui.js"></script>
+    <script src="assets/js/searchEngine.js"></script>
+    <script src="assets/js/login_handle.js"></script>
+</head>
+<body>
+<div class="sticky-top">
+    <nav></nav>
+    <div class=" bg-light">
+        <label class="">Wyszukaj:
+            <input type="text" id="searchquery" class="form-control" onkeyup="find_others(this);"/>
+        </label>
+    </div>
+</div>
+<div id="query_result" class="d-flex align-content-center justify-content-center">
+    <button class="btn btn-primary" type="button" disabled>
+        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+        Trwa łączenie z API
+    </button>
+</div>
+<script>
+    checkToken();
+    getAllCustomers();
+</script>
+<script src="assets/js/mdb.min.js"></script>
+</body>
+</html>
