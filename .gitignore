@@ -1,5 +1,8 @@
-/venv/
 /.idea/
-/__pycache__/
-/service.db
-/db/service.db
+/Web_app_old/
+/web_app/node_modules/
+/api/venv/
+/api/__pycache__/
+/api/service_management_system/__pycahce__/
+/api/service_management_system.egg-info/
+/api/build/

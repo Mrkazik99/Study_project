@@ -1,0 +1,24 @@
+[project]
+name = "service_management_system"
+description = "System for managing service"
+version = "1.0.0"
+requires-python = ">=3.11"
+
+authors = [
+    { name = "Mateusz Kazmierczak", email = "mateuszkazmierczak99@gmail.com" },
+    { name = "Mateusz Krukowski", email = "matwoz2001@icloud.com " },
+    { name = "Seweryn Bluszcz", email = "seweryn.bluszcz@gmail.com" },
+    { name = "Paweł Grabczak", email = "test@test.pl" }
+]
+
+dependencies = [
+    "pyjwt",
+    "fastapi",
+    "uvicorn[standard]",
+    "pony",
+    "asyncio",
+    "Starlette",
+    "pydantic",
+    "python-multipart",
+    "pymysql"
+]
