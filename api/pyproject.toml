@@ -20,5 +20,6 @@ dependencies = [
     "Starlette",
     "pydantic",
     "python-multipart",
-    "pymysql"
+    "pymysql",
+    "argon2-cffi"
 ]

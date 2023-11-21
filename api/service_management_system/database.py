@@ -91,78 +91,35 @@ def iterate_tokens():
 
 
 @db_session
-def fill_db():
-    Department(name='administracja')
-    db.flush()
-    Employee(username='worker1', email='abc1@abc.pl',
-             password='fbacf4a44108031458024d7528c0a6e08ccd91f9c2b42d4d39f514d6db2a7ad893fac14038bec2512300af67e871d39163dcaf0bf0ff532986f10a9f5ba85314',
-             department=Department[1], activated=True, admin_permissions=True,
-             token='', name='worker1')
-    Customer(name='customer1', phone_number='123123123')
-    db.flush()
-    for i in range(2):
-        Request(employee=Employee[1], customer=Customer[1], item="Samsung", description='mgikomndfgo', status=1,
-                date0=datetime.now(),
-                date1=datetime.now())
-    db.flush()
-
-
-@db_session
-def initialize():
+def initialize(admin_uname: str, admin_email: str, admin_passwd: str, department_name: str, real_name: str):
     if not Department.select().exists():
-        Department(name='administracja')
+        department = Department(name=department_name)
         db.flush()
-        Employee(username='admin', email='admin@admin.pl',
-                 password='fbacf4a44108031458024d7528c0a6e08ccd91f9c2b42d4d39f514d6db2a7ad893fac14038bec2512300af67e871d39163dcaf0bf0ff532986f10a9f5ba85314',
-                 department=Department[1], activated=True, admin_permissions=True, token='', name='admin')
+        Employee(username=admin_uname, email=admin_email,
+                 password=admin_passwd,
+                 department=department, activated=True, admin_permissions=True, token='', name=real_name)
         db.flush()
         return True
     else:
         return False
 
 
-#  ----------------------->Auth section<-----------------------
-
-@db_session
-def register(username: str, email: str, passwd: str):
-    department = Department.get(id=1)
-    if department is None:
-        department = Department(name='administracja')
-        db.flush()
-    employee = Employee(username=username, email=email, password=passwd, department=department, activated=False)
-    db.flush()
-
-
-@db_session
-def is_employee(username: str, password: str):
-    try:
-        return Employee.exists(username=username, password=password)
-    except Exception as e:
-        raise Exception('Something is wrong') from e
-
-
-@db_session
-def insert_employee(username: str, email: str, passwd: str, department_id: int):
-    department = Department.get(id=department_id)
-    employee = Employee(username=username, email=email, password=passwd, department=department)
-    db.flush()
-
-
 #  ----------------------->Requests section<-----------------------
 
 @db_session
-def create_request_db(customer_id: int, employee_id: int, item: str, description: str):
+def create_request(customer_id: int, employee_id: int, item: str, description: str):
     try:
         Request(employee=Employee.get(id=employee_id), customer=Customer.get(id=customer_id), item=item,
                 description=description, status=1, date0=datetime.now(), date1=datetime.now())
         db.flush()
         return True
     except Exception as e:
-        raise Exception('Something is wrong') from e
+        print('Result not found', e)
+        return None
 
 
 @db_session
-def update_request_db(req_id: int, employee=None, description=None, date2=None, status=None, price=None):
+def update_request(req_id: int, employee=None, description=None, date2=None, status=None, price=None):
     try:
         req = Request.get(id=req_id)
         req.employee = Employee.get(id=employee) if employee else req.employee
@@ -174,11 +131,12 @@ def update_request_db(req_id: int, employee=None, description=None, date2=None, 
         db.flush()
         return True
     except Exception as e:
-        raise Exception('Something is wrong') from e
+        print('Could not update row', e)
+        return False
 
 
 @db_session
-def get_request(req_id: int):
+def get_request_by_id(req_id: int):
     try:
         result = Request.get(id=req_id).to_dict()
         result['customer'] = Customer.get(id=result['customer']).to_dict()
@@ -188,11 +146,12 @@ def get_request(req_id: int):
         result['date2'] = datetime.strftime(result['date2'], '%m/%d/%Y') if result['date2'] else None
         return result
     except Exception as e:
-        raise Exception('Something is wrong') from e
+        print('Result not found', e)
+        return None
 
 
 @db_session
-def get_requests_person(customer_id: int):
+def get_requests_by_person(customer_id: int):
     try:
         result = [row.to_dict() for row in
                   select(req for req in Request if Request.customer == Customer.get(id=customer_id))]
@@ -201,11 +160,12 @@ def get_requests_person(customer_id: int):
             req['employee'] = Employee.get(id=req['employee']).to_dict()['name']
         return result
     except Exception as e:
-        raise Exception('Something is wrong') from e
+        print('Result not found', e)
+        return None
 
 
 @db_session
-def get_requests_date(start, end):
+def get_requests_by_dates(start, end):
     try:
         result = [row.to_dict() for row in select(req for req in Request if req.date0 >= start and req.date0 <= end)]
         for req in result:
@@ -215,11 +175,12 @@ def get_requests_date(start, end):
             req['date1'] = datetime.strftime(req['date1'], '%m/%d/%Y')
         return result
     except Exception as e:
+        print('Result not found', e)
         return None
 
 
 @db_session
-def get_requests_date_and_scope(start, end, user):
+def get_requests_by_date_and_employee(start, end, user):
     try:
         result = [row.to_dict() for row in select(req for req in Request if
                                                   req.date0 >= start and req.date0 <= end and req.employee == Employee.get(
@@ -231,23 +192,42 @@ def get_requests_date_and_scope(start, end, user):
             req['date1'] = datetime.strftime(req['date1'], '%m/%d/%Y')
         return result
     except Exception as e:
+        print('Result not found', e)
+        return None
+
+
+@db_session
+def get_requests_by_dates_and_customer(start, end, customer_name):
+    try:
+        result = [row.to_dict() for row in select(req for req in Request if
+                                                  req.date0 >= start and req.date0 <= end and req.customer == Customer.get(
+                                                      name=customer_name))]
+        for req in result:
+            req['customer'] = Customer.get(id=req['customer']).to_dict()['name']
+            req['employee'] = Employee.get(id=req['employee']).to_dict()['name']
+            req['date0'] = datetime.strftime(req['date0'], '%m/%d/%Y')
+            req['date1'] = datetime.strftime(req['date1'], '%m/%d/%Y')
+        return result
+    except Exception as e:
+        print('Result not found', e)
         return None
 
 
 #  ----------------------->Customers section<-----------------------
 
 @db_session
-def create_customer_db(name, phone, email):
+def create_customer(name, phone, email):
     try:
         Customer(name=name, phone_number=phone, email=email)
         db.flush()
         return True
-    except TransactionIntegrityError:
+    except Exception as e:
+        print('Could not create row', e)
         return False
 
 
 @db_session
-def update_customer_db(customer_id, name, phone, email):
+def update_customer(customer_id, name, phone, email):
     try:
         customer = Customer.get(id=customer_id)
         customer.name = name if name else customer.name
@@ -256,12 +236,17 @@ def update_customer_db(customer_id, name, phone, email):
         db.flush()
         return True
     except Exception as e:
-        raise Exception('Something is wrong') from e
+        print('Could not update row', e)
+        return False
 
 
 @db_session
 def get_customer(customer_id):
-    return Customer.get(id=customer_id).to_dict()
+    try:
+        return Customer.get(id=customer_id).to_dict()
+    except Exception as e:
+        print('Result not found', e)
+        return None
 
 
 @db_session
@@ -271,20 +256,22 @@ def get_customers():
 
 #  ----------------------->Employees section<-----------------------
 
+
 @db_session
-def create_employee_db(uname: str, password: str, name: str, email: str, phone: str, dep_id: int, active: bool,
-                       admin: bool):
+def create_employee(uname: str, password: str, name: str, email: str, phone: str, dep_id: int, active: bool,
+                    admin: bool):
     try:
         Employee(username=uname, password=password, email=email, phone_number=phone, name=name,
                  department=Department.get(id=dep_id), activated=active, admin_permissions=admin)
         db.flush()
         return True
-    except TransactionIntegrityError:
+    except Exception as e:
+        print('Could not create row', e)
         return False
 
 
 @db_session
-def update_employee_db(employee_id, email, department_id, activated, admin, name, phone):
+def update_employee(employee_id, email, department_id, activated, admin, name, phone):
     try:
         employee = Employee.get(id=employee_id)
         employee.name = name if name else employee.name
@@ -296,22 +283,31 @@ def update_employee_db(employee_id, email, department_id, activated, admin, name
         db.flush()
         return True
     except Exception as e:
-        raise Exception('Something is wrong') from e
+        print('Could not update row', e)
+        return False
 
 
 @db_session
-def put_employee_token(username: str, token: str):
-    employee = Employee.get(username=username)
-    employee.token = token
-    db.flush()
-
-
-@db_session
-def get_employee(username: str, password: str):
+def update_password_hash_for_user(name: str, passwd: str):
     try:
-        return Employee.get(username=username, password=password).to_dict()
+        employee = Employee.get(username=name)
+        employee.password = passwd
+        db.flush()
+        return True
     except Exception as e:
-        return None
+        print('Could not update row', e)
+        return False
+
+
+@db_session
+def update_employee_token(username: str, token: str):
+    try:
+        employee = Employee.get(username=username)
+        employee.token = token
+        db.flush()
+    except Exception as e:
+        print('Could not update row', e)
+        return False
 
 
 @db_session
@@ -321,14 +317,16 @@ def get_employee_by_id(employee_id: int):
         result['department'] = Department.get(id=result['department']).to_dict()
         return result
     except Exception as e:
+        print('Result not found', e)
         return None
 
 
 @db_session
-def get_employee_username(username: str):
+def get_employee_by_username(username: str):
     try:
         return Employee.get(username=username).to_dict()
     except Exception as e:
+        print('Result not found', e)
         return None
 
 
@@ -337,6 +335,7 @@ def get_employee_from_token(token: str):
     try:
         return Employee.get(token=token).to_dict()
     except Exception as e:
+        print('Result not found', e)
         return None
 
 
@@ -346,7 +345,7 @@ def get_employees():
 
 
 @db_session
-def get_employees_departs():
+def get_employees_with_departs():
     result = [row.to_dict() for row in select(req for req in Employee)]
     for employee in result:
         employee['department'] = Department.get(id=employee['department']).to_dict()['name']
@@ -356,23 +355,36 @@ def get_employees_departs():
 #  ----------------------->Departments section<-----------------------
 
 @db_session
-def create_department_db(department: str):
+def update_department(id: int, name: str):
+    try:
+        department = Department.get(id=id)
+        department.name = name
+        db.flush()
+    except Exception as e:
+        print('Could not update row', e)
+        return False
+
+
+@db_session
+def create_department(department: str):
     try:
         Department(name=department)
         db.flush()
         return True
-    except TransactionIntegrityError:
+    except Exception as e:
+        print('Could not create row', e)
         return False
 
 
 @db_session
 def get_department(department_id: int):
-    return Department.get(id=department_id).to_dict()
+    try:
+        return Department.get(id=department_id).to_dict()
+    except Exception as e:
+        print('Result not found', e)
+        return None
 
 
 @db_session
 def get_departments():
-    result = []
-    for row in select(req for req in Department):
-        result.append(row.to_dict())
-    return result
+    return [row.to_dict() for row in select(req for req in Department)]

@@ -4,6 +4,20 @@ from fastapi import Form
 from pydantic import BaseModel
 
 
+class BasicMessage(BaseModel):
+    message: str
+
+
+class LoginMessage(BaseModel):
+    login_status: str
+    token_type: str
+    token_data: str
+
+
+class RedirectMessage(BaseModel):
+    redirect_url: str
+
+
 class NewCustomer(BaseModel):
     name: str
     phone_number: str
@@ -21,7 +35,8 @@ class NewRequest(BaseModel):
     description: str
 
     @classmethod
-    def as_form(cls, id_customer=Form(...), id_employee=Form(...), item=Form(...), description=Form(...)) -> 'NewRequest':
+    def as_form(cls, id_customer=Form(...), id_employee=Form(...), item=Form(...),
+                description=Form(...)) -> 'NewRequest':
         return cls(id_customer=id_customer, id_employee=id_employee, item=item, description=description)
 
 
@@ -36,8 +51,10 @@ class NewEmployee(BaseModel):
     admin_permissions: bool | None = None
 
     @classmethod
-    def as_form(cls, username=Form(...), email=Form(...), password=Form(...), department_id=Form(...), activated=Form(...), name=Form(...), phone_number=Form(...)) -> 'NewEmployee':
-        return cls(username=username, email=email, password=password, department_id=department_id, activated=activated, name=name, phone_number=phone_number)
+    def as_form(cls, username=Form(...), email=Form(...), password=Form(...), department_id=Form(...),
+                activated=Form(...), name=Form(...), phone_number=Form(...)) -> 'NewEmployee':
+        return cls(username=username, email=email, password=password, department_id=department_id, activated=activated,
+                   name=name, phone_number=phone_number)
 
 
 class NewDepartment(BaseModel):
@@ -67,8 +84,16 @@ class EditRequest(BaseModel):
     price: Decimal | None = None
 
     @classmethod
-    def as_form(cls, id_entity=Form(...), employee=Form(...), description=Form(...), status=Form(...), price=Form(...)) -> 'EditRequest':
+    def as_form(cls, id_entity=Form(...), employee=Form(...), description=Form(...), status=Form(...),
+                price=Form(...)) -> 'EditRequest':
         return cls(id_entity=id_entity, employee=employee, description=description, status=status, price=price)
+
+
+class User(BaseModel):
+    username: str
+    email: str | None = None
+    full_name: str | None = None
+    disabled: bool | None = None
 
 
 class EditEmployee(BaseModel):
@@ -82,5 +107,8 @@ class EditEmployee(BaseModel):
     phone_number: str | None = None
 
     @classmethod
-    def as_form(cls, id_entity=Form(...), username=Form(...), email=Form(...), password=Form(...), department=Form(...), activated=Form(...), admin_permissions=Form(...), name=Form(...), phone_number=Form(...)) -> 'EditEmployee':
-        return cls(id_entity=id_entity, username=username, email=email, password=password, department=department, activated=activated, admin_permissions=admin_permissions, name=name, phone_number=phone_number)
+    def as_form(cls, id_entity=Form(...), username=Form(...), email=Form(...), password=Form(...), department=Form(...),
+                activated=Form(...), admin_permissions=Form(...), name=Form(...),
+                phone_number=Form(...)) -> 'EditEmployee':
+        return cls(id_entity=id_entity, username=username, email=email, password=password, department=department,
+                   activated=activated, admin_permissions=admin_permissions, name=name, phone_number=phone_number)

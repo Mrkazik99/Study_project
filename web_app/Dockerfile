@@ -1,5 +1,7 @@
 FROM node:18-alpine
 
+EXPOSE 3000
+
 WORKDIR /react-docker-example/
 
 COPY public/ /web_app/public
